@@ -122,7 +122,7 @@ Each agent needs the servers registered in its MCP configuration:
 
 ## Project Context
 
-- `Fases/` holds the phase specs (0-5) for a local AI 3D-generation engine: a FastAPI backend that splits work across two GPUs, a PySide6 desktop client, and a Blender add-on. Every code block, file path, and JSON payload was stripped from those documents, and they are written in Spanish. Treat them as intent only, never as an API source or file layout.
-- LM Studio (`pumbastudio`) keeps its model in GPU memory, and 3D generation needs about 10-12 GB of VRAM per card. Unload the LM Studio model before GPU jobs or GPU tests.
+- This repository is a reusable project setup template for AI coding agent rules, workflow standards, and subagent configurations.
+- Add application-specific architecture, dependencies, and commands in the projects that reuse this template.
 - `.atl/` and `.codegraph/` are local tooling state with their own `.gitignore`. Never stage with a blanket `git add`.
 - Commits follow Conventional Commits, with no AI attribution lines.

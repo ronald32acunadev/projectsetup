@@ -1,6 +1,6 @@
 # Project Setup Template
 
-Starter template repository containing universal AI coding agent rules, workflow standards, and subagent configurations for bootstrapping new projects.
+Starter template repository containing universal AI coding agent rules, workflow standards, and subagent configurations for bootstrapping new projects. Application-specific architecture, dependencies, and commands belong in the projects that reuse this template.
 
 ## Overview
 
