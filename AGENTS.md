@@ -46,7 +46,7 @@ Local models are the owner's dedicated code synthesizers, exposed to agents as M
 ## Workflow
 
 1. **Explore and Plan**: Explore the code and decide what needs to change. Do not ask local models to explore; they have no filesystem or repository access.
-2. **Build the Library Context Brief**: Before every code request, resolve the current state of every library the task touches (see the next section). Never send a code request without it.
+2. **Resolve Library Facts (Cache-Aside Flow)**: Before every code request, resolve the current state of every library the task touches using the `.context/` cache or Context7, and build the Library Context Brief. Never send a code request without it.
 3. **Prepare Prompt**:
    - Call `pumbastudio` (or fallback to `pumbalama`) with a self-contained prompt that follows the Prompt Template below.
    - **System message**: Include project rules that apply (language, architecture constraints, style).
@@ -54,11 +54,20 @@ Local models are the owner's dedicated code synthesizers, exposed to agents as M
 4. **Review**: Check the answer against the request, the Library Context Brief, project rules, and language requirements. Reject any API, import, or option that is not in the brief or in the existing code. If incorrect or incomplete, send a follow-up naming the specific defect and the correct API.
 5. **Apply and Test**: Apply the code to files using file tools and run applicable tests.
 
-## Library Context Brief (MANDATORY)
+## Library Context Brief & Offline Documentation Cache (MANDATORY)
 
 Local models have fixed knowledge cutoffs and no internet or repository access. They do not know the latest library versions, newly introduced APIs, or recent breaking changes, and they will confidently write code against an older API. The quality of their code depends on how specific the agent is.
 
-The agent, not the local model, resolves what is current, using in this order: the project's lockfile and manifest (`package-lock.json`, `pnpm-lock.yaml`, `pyproject.toml`, `go.mod`, `Cargo.lock`, ...) for the installed version; Context7 or the official docs and changelog for that exact version; the installed package source or type definitions (`node_modules`, `site-packages`, ...) when docs are unclear.
+Agents must resolve current library documentation using a **Cache-Aside** strategy:
+
+1. **Resolve version from lockfile/manifest**: The orchestrating agent checks the project's lockfile (`package-lock.json`, `pnpm-lock.yaml`, `Cargo.lock`, `pyproject.toml`, `go.mod`, etc.) for the exact installed version. Never query documentation without an exact version.
+2. **Check local cache (`.context/`)**: Look for `.context/<library>@<version>.md` (ignored by Git in `.gitignore`):
+   - **Cache Hit**: Read reference documentation directly from disk with zero network latency.
+   - **Cache Miss**: Query Context7 (or official docs/type definitions) for that exact version, save the result to `.context/<library>@<version>.md`, and proceed.
+3. **Curate the brief**: The orchestrator extracts only the signatures, options, and minimal examples needed for the task into the Library Context Brief. Never dump whole raw documentation files into the local model's prompt.
+4. **Engram vs .context/ separation of concerns**:
+   - **`.context/`**: Raw third-party API documentation and SDK guides (local cache).
+   - **Engram (`mem_save`)**: Project-specific discoveries, gotchas, architecture choices, and bug root causes. Never save raw third-party doc dumps to Engram.
 
 Every code request includes a brief with, for each library the task touches:
 
