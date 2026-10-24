@@ -97,6 +97,8 @@ An empty output confirms both files match byte-for-byte.
 ```
 projectsetup/
 ├── .agents/
+│   ├── local-llm-guide.md                     # Prompting a 32k-context local model
+│   ├── local-llm-prompt-rules.md              # Rules pasted into every local-model code request
 │   ├── rules/
 │   │   └── AGENTS.md                          # Byte-identical mirror of AGENTS.md
 │   └── skills/
@@ -110,6 +112,8 @@ projectsetup/
 ├── .opencode/
 │   └── commands/
 │       └── update-readme.md                   # /update-readme slash command for OpenCode
+├── scripts/
+│   └── ask_local_llm.py                       # Send a code request to LM Studio or Ollama directly
 ├── AGENTS.md                                  # Canonical cross-agent rules & delegation standards
 ├── CLAUDE.md                                  # Claude Code entrypoint and adapter
 ├── .gitignore                                 # Git ignore patterns including .context/ cache
@@ -122,6 +126,9 @@ projectsetup/
 | :--- | :--- | :--- |
 | [`AGENTS.md`](./AGENTS.md) | Universal (Antigravity, Cursor, OpenCode, Codex, etc.) | Canonical source of truth for agent behavior, delegation, and workflow rules. |
 | [`.agents/rules/AGENTS.md`](./.agents/rules/AGENTS.md) | Tools expecting nested `.agents/` hierarchy | Byte-identical mirror of `AGENTS.md` verified by CI or pre-commit checks. |
+| [`.agents/local-llm-prompt-rules.md`](./.agents/local-llm-prompt-rules.md) | All agents delegating code | Short rules pasted into every local-model code request, grown from rejected answers. |
+| [`.agents/local-llm-guide.md`](./.agents/local-llm-guide.md) | All agents delegating code | How to prompt a 32k-context local model and which models write usable code. |
+| [`scripts/ask_local_llm.py`](./scripts/ask_local_llm.py) | All agents delegating code | Calls the local model directly when the MCP tool times out or cannot turn reasoning off. |
 | [`CLAUDE.md`](./CLAUDE.md) | Claude Code | Root configuration pointing to `@AGENTS.md` and defining Claude-specific bridge tools. |
 | [`.agents/skills/update-readme/`](./.agents/skills/update-readme/) | Universal Skill | Evaluates repository manifests and entrypoints to generate and audit ground-truth READMEs. |
 | [`.claude/commands/update-readme.md`](./.claude/commands/update-readme.md) | Claude Code | Exposes the `/update-readme` slash command inside Claude Code sessions. |
@@ -199,6 +206,12 @@ Agents never hardcode specific model names. They dynamically target whichever mo
    - Uses whichever model is currently active in memory.
 3. **Fallback: Host Model**
    - Used when both local engines are offline or encounter GPU out-of-memory errors.
+
+### Calling the Local Model
+
+- **Prompt rules**: every code request carries [`.agents/local-llm-prompt-rules.md`](./.agents/local-llm-prompt-rules.md) in its system message; a review that rejects part of an answer adds one short rule there.
+- **Without the MCP time limit**: `python3 scripts/ask_local_llm.py --user request.md --out answer.md --code-out file.py` (add `--provider ollama` for Ollama) sends the request straight to the local API with a 30-minute timeout and `reasoning_effort: "none"` unless `--think` is given, and adds the rules file itself.
+- **Guide**: [`.agents/local-llm-guide.md`](./.agents/local-llm-guide.md) covers the token budget for a 32k context, one file per request, and measured results on which kind of model writes usable code.
 
 ### MCP Configuration Reference
 
