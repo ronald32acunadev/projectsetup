@@ -14,10 +14,11 @@ Reusable bootstrap template containing universal AI coding agent rules, local-fi
 
 **Project Setup Template** standardizes how AI coding assistants (Antigravity, Claude Code, Codex, Cursor, OpenCode, and compatible tools) operate across software repositories. Instead of recreating operational rules and tooling hooks in every repository, this template provides a single, canonical rule file (`AGENTS.md`), its synchronized mirror (`.agents/rules/AGENTS.md`), environment adapters (`CLAUDE.md`), and reusable agent skills with native slash-command integrations.
 
-It enforces five architectural pillars in AI-assisted engineering:
+It enforces six architectural pillars in AI-assisted engineering:
 
 - **English-First Hygiene & Clean Commits**: Enforces English for all source code, identifiers, comments, documentation, and Conventional Commits without AI attribution or co-author trailers.
-- **Local-First Code Delegation**: Offloads code, test, and script synthesis to local LLMs (`pumbastudio` via LM Studio and `pumbalama` via Ollama) targeting whichever model is currently loaded in memory, keeping cloud models for orchestration.
+- **Approved Backlog Before Implementation**: A reasoning-capable planner reviews small user stories and waits for the user to approve the backlog and choose all-stories or one-at-a-time execution.
+- **Local-First Code Delegation**: Offloads code, test, and script synthesis to the active local model (`pumbastudio`, then `pumbalama`), with an available lightweight hosted implementer as fallback, keeping planning and review separate.
 - **Zero Hallucination with Library Context Briefs**: Requires orchestrators to assemble verified API surfaces, versions, and usage constraints from lockfiles and documentation before prompting code synthesizers.
 - **Cache-Aside Documentation Architecture**: Keeps raw third-party documentation on disk in `.context/<library>@<version>.md` (Git-ignored) via Context7, separating API reference caches from architectural memory (Engram).
 - **Cross-Platform Skills & Commands**: Ships modular skills (such as `update-readme`) wired directly to native agent command interfaces (`.claude/commands/` and `.opencode/commands/`).
@@ -163,19 +164,28 @@ Audits, generates, or updates `README.md` and companion language files (`README.
 
 ### 2. Code Authorship & Delegation Hierarchy
 
-Source code, tests, and scripts are synthesized by local LLM providers first. The orchestrating agent writes code itself only when local providers are unavailable:
+The reasoning-capable planner prepares the backlog and reviews results. Source code, tests, and scripts go to local providers first, then an available lightweight hosted implementer when local execution is unavailable or explicitly bypassed:
 
 ```mermaid
 flowchart TD
-    Task[Code Request] --> CheckLM[Check LM Studio\npumbastudio / 1234]
+    Task[Change Request] --> Plan[Plan and Review Complete Backlog]
+    Plan --> Approval[Wait for Backlog Approval and Execution Mode]
+    Approval --> Route{Use Local Models?}
+    Route -- Yes --> CheckLM[Check LM Studio\npumbastudio / 1234]
+    Route -- User Bypasses Local --> HostModel[Select Available Lightweight Hosted Implementer]
     CheckLM -- Available --> SynthLM[Synthesize with Active Model]
     CheckLM -- Unavailable / Error --> CheckOllama[Check Ollama\npumbalama / 11434]
     CheckOllama -- Available --> SynthOllama[Synthesize with Active Model]
-    CheckOllama -- Unavailable / Error --> HostModel[Fallback to Host Model\nGemini / Claude / etc.]
+    CheckOllama -- Unavailable / Error --> HostModel
     SynthLM --> Review[Orchestrator Code Review & Verification]
     SynthOllama --> Review
-    HostModel --> Review
+    HostModel -- Available --> Review
+    HostModel -- Cannot Select or Invoke --> Decision[Stop for User Model Selection or Explicit Override]
     Review --> Apply[Apply to Disk & Run Tests]
+    Apply --> Report[Report Story Results]
+    Report --> Mode{Approved Execution Mode}
+    Mode -- All Stories --> Next[Continue Approved Backlog Unless Blocked]
+    Mode -- One at a Time --> Wait[Wait for Approval of Next Story]
 ```
 
 #### What Local Models Write
@@ -189,6 +199,19 @@ flowchart TD
 - Applying synthesized code to disk and running test suites
 - Architectural review for safety and correctness
 - Writing documentation, configuration files, and commit messages
+
+### 3. Backlog Approval and Execution Modes
+
+Before implementation, show the complete reviewed backlog. Each story has a stable ID (`US-01`), a simple "As a ..., I want ..., so that ..." statement, acceptance criteria, dependencies, and a verification method. One small request may be one story.
+
+Ask in the user's language: **"Do you approve this backlog, and should I implement all stories or proceed one at a time?"** Wait for explicit approval and an unambiguous mode; approving a design is not approving its backlog.
+
+| Approved mode | Behavior |
+| :--- | :--- |
+| All stories | Implement in dependency order, verify and report each story, and continue without repeated approval unless blocked or scope changes. |
+| One at a time | Implement and verify the next story, show changes and results, then stop until the user approves proceeding. |
+
+Track stories as pending, in progress, blocked, or complete. Scope revisions require approval before implementing affected stories. Small backlogs stay in the conversation; larger work reuses its existing task document. Read-only questions do not need a backlog.
 
 ---
 
@@ -204,8 +227,12 @@ Agents never hardcode specific model names. They dynamically target whichever mo
 2. **Secondary Provider: `pumbalama`**
    - Served by Ollama (port `11434`), MCP tool `chat_completion`.
    - Uses whichever model is currently active in memory.
-3. **Fallback: Host Model**
-   - Used when both local engines are offline or encounter GPU out-of-memory errors.
+3. **Fallback: Lightweight Hosted Implementer**
+   - Used when both local engines are unavailable or fail, or when the user explicitly chooses not to use local models.
+   - Select an available lightweight model through the current client's supported capabilities; do not hardcode model names or silently change global defaults.
+   - If selection or invocation is unavailable, stop and ask the user to select a lightweight model or explicitly authorize the current model. Never silently use the planning model as the code writer.
+
+These rules guide agents; they do not install an automatic model switcher. Report the actual execution route and any uncertainty about model identity. Lower reasoning effort alone is not a model change.
 
 ### Calling the Local Model
 
@@ -239,17 +266,18 @@ Add these servers to your agent's MCP configuration file:
 }
 ```
 
-### 5-Step Code Change Workflow
+### Approved Code Change Workflow
 
 ```
-1. Explore & Plan ──> 2. Resolve Library Facts ──> 3. Prompt Local Model ──> 4. Review ──> 5. Apply & Verify
+Plan & Review Backlog -> Wait for Approval + Mode -> Resolve Library Facts -> Prompt Implementer -> Review -> Apply & Verify -> Report / Pause
 ```
 
-1. **Explore and Plan**: Inspect the target repository to determine changes. Never delegate exploration to local models.
-2. **Resolve Library Facts (Cache-Aside Flow)**: Look up installed versions in lockfiles, check `.context/<lib>@<version>.md`, and assemble the **Library Context Brief**.
-3. **Prepare Prompt**: Pass project rules as `system` instructions, and include the Library Context Brief, task description, target code verbatim, and expected output format.
-4. **Review**: Validate the response against the brief and repository patterns. Reject any hallucinated or deprecated APIs.
-5. **Apply and Test**: Save files and execute the project's verification suite.
+1. **Explore and Plan**: Inspect the repository and review the complete backlog. Never delegate exploration to local models.
+2. **Obtain Approval**: Wait for backlog approval and the all-stories or one-at-a-time choice before implementation.
+3. **Resolve Library Facts (Cache-Aside Flow)**: Look up installed versions in lockfiles, check `.context/<lib>@<version>.md`, and assemble the **Library Context Brief**.
+4. **Prepare Prompt**: Select the local-first or lightweight hosted implementer. Include project rules, approved story and acceptance criteria, allowed files, the brief, relevant code verbatim, and expected output format.
+5. **Review and Learn**: Validate against the story, brief, and repository patterns. Send one focused correction request for rejected output; report a blocker if it still fails. Save reusable prompt corrections in `.agents/local-llm-prompt-rules.md` and project findings in Engram. This improves future context, not model weights.
+6. **Apply, Test, and Report**: Save files, execute acceptance checks and applicable tests, and report results. Pause after each story in one-at-a-time mode; otherwise continue within the approved backlog unless blocked.
 
 ---
 
