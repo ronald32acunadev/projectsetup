@@ -202,7 +202,7 @@ flowchart TD
 
 ### 3. Backlog Approval and Execution Modes
 
-Before implementation, show the complete reviewed backlog. Each story has a stable ID (`US-01`), a simple "As a ..., I want ..., so that ..." statement, acceptance criteria, dependencies, and a verification method. One small request may be one story.
+Before implementation, save the complete reviewed backlog to `docs/userstories/{featurename}/README.md` in the active project. Share a short summary and link rather than pasting the full backlog. Each story has a stable ID (`US-01`), an actor/goal/value statement, relevant scope and business rules, dependencies, and observable criteria with story-scoped IDs (`US-01 / AC-01`) and verification methods. Resolve behavior-changing ambiguities without inventing requirements. Given/When/Then is optional; one small request may be one concise story.
 
 Ask in the user's language: **"Do you approve this backlog, and should I implement all stories or proceed one at a time?"** Wait for explicit approval and an unambiguous mode; approving a design is not approving its backlog.
 
@@ -211,7 +211,13 @@ Ask in the user's language: **"Do you approve this backlog, and should I impleme
 | All stories | Implement in dependency order, verify and report each story, and continue without repeated approval unless blocked or scope changes. |
 | One at a time | Implement and verify the next story, show changes and results, then stop until the user approves proceeding. |
 
-Track stories as pending, in progress, blocked, or complete. Scope revisions require approval before implementing affected stories. Small backlogs stay in the conversation; larger work reuses its existing task document. Read-only questions do not need a backlog.
+Track stories as pending, in progress, blocked, or complete in that same story file, including for small backlogs. Scope revisions require approval before implementing affected stories. Link other required task documents instead of creating competing trackers. Read-only questions do not need a backlog.
+
+### 4. Verifiable Story and QA Quality
+
+The [canonical contracts](AGENTS.md#story-readiness-contract-mandatory) define story readiness and [QA evidence](AGENTS.md#qa-evidence-and-traceability-contract-mandatory). Each criterion maps to an actual named automated check or reproducible manual procedure and its observed result in the same story file. New or changed tests reference a criterion or an explicit change-related regression risk; unrelated historical tests and supporting helpers need no retroactive labels.
+
+Choose relevant successful, negative, boundary, and regression scenarios and the least costly verification level that proves the behavior. Specialized checks depend on risk, not quotas. Verify observable outputs and applicable errors and state effects, not merely mock calls. Use applicable test-first discipline; document manual or structural exceptions honestly. Completion requires demonstrated criteria and passing applicable regression checks, not generated tests or coverage percentages alone. Missing, failed, skipped, or blocked required proof stays visible and prevents completion. Approved scope changes update affected checks while preserving still-valid evidence.
 
 ---
 
