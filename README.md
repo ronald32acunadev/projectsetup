@@ -27,6 +27,42 @@ A reusable project setup template for AI coding agents. It ships one set of agen
 
 ## Quick start
 
+There are two ways to use the template. The global skills keep every project pointed at this folder, so rule changes here reach all projects with nothing to copy.
+
+### Option A: global skills (recommended)
+
+Install the skills into every agent you have:
+
+```bash
+sh scripts/install_skills.sh
+```
+
+Then, in any project, invoke the skill you need:
+
+| Skill | What it does |
+| :--- | :--- |
+| `/pumba-projectsetup` | Reads this folder's `AGENTS.md` and applies all of it for the session: backlogs, branches, story and QA contracts, local-model delegation, and self-learning. Rejected local-model answers add a rule to the central `.agents/local-llm-prompt-rules.md`, shared by all projects. Writes no files into the project. |
+| `/pumba-update-readme` | Runs the [`update-readme`](.agents/skills/update-readme/SKILL.md) skill on the current project's README. |
+
+The installer writes a small `SKILL.md` per agent that holds this folder's absolute path. It installs only for agents whose config folder exists:
+
+| Agent | Config folder | Skills folder |
+| :--- | :--- | :--- |
+| Claude Code | `~/.claude` | `~/.claude/skills` |
+| Codex | `~/.codex` | `~/.codex/skills` |
+| OpenCode | `~/.config/opencode` | `~/.config/opencode/skills` |
+| Antigravity | `~/.gemini/config` | `~/.gemini/config/skills` |
+
+| Flag | Description |
+| :--- | :--- |
+| `--dry-run` | Prints what would change, prefixed with `[dry-run]`, and changes nothing. |
+| `--uninstall` | Removes only the skill folders this installer created. |
+| `-h`, `--help` | Prints the usage line. |
+
+Rerun it after moving this folder; rule edits need no reinstall. It never overwrites a skill folder it did not create: it reports a `conflict` and exits with code 1.
+
+### Option B: copy into a project
+
 1. Copy the template files into the root of your project:
 
    ```bash
@@ -54,6 +90,7 @@ A reusable project setup template for AI coding agents. It ships one set of agen
 │   ├── rules/AGENTS.md               # Byte-identical copy of AGENTS.md
 │   ├── local-llm-guide.md            # Guide for prompting a 32k-context local model
 │   ├── local-llm-prompt-rules.md     # System message for every local code request
+│   ├── global-skills/                # Templates for pumba-* skills, rendered by the installer
 │   └── skills/update-readme/         # README audit/update skill
 ├── .claude/
 │   ├── commands/update-readme.md     # Exposes the skill as /update-readme in Claude Code
@@ -63,7 +100,8 @@ A reusable project setup template for AI coding agents. It ships one set of agen
 ├── docs/userstories/                 # One backlog per feature
 └── scripts/
     ├── ask_local_llm.py              # Fallback client for local models
-    └── configure_ollama_models.sh    # Owner-specific Ollama model-path setup
+    ├── configure_ollama_models.sh    # Owner-specific Ollama model-path setup
+    └── install_skills.sh             # Installs pumba-* skills into every agent
 ```
 
 | File | Purpose |
