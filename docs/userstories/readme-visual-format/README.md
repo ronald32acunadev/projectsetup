@@ -8,7 +8,7 @@
 
 - Backlog: Approved 2026-11-17.
 - Execution mode: All stories.
-- Implementation: Complete (Mermaid render check manual-only).
+- Implementation: Complete.
 
 ## Confirmed facts
 
@@ -55,7 +55,7 @@ Passive documentation: no runnable RED test. Mermaid blocks are checked with the
 | Story / criterion | Check | Observed result |
 | --- | --- | --- |
 | `US-01 / AC-01`–`AC-04` | Readback of `visual-format.md` and `SKILL.md`; link check | Passed: layout (§1), logo and color detection with no-invention rule (§2–§3), Mermaid `themeVariables` and badges only (§4); `SKILL.md` step 4 and References link it. All links resolve (the `README.es.md` example sits inside inline code). OpenCode command updated to "6-step". |
-| `US-02 / AC-01` | Readback; Mermaid render check | Partial: centered header with no logo or badges, workflow flowchart (with the branch step) and delegation flowchart present, no `init` line. Mermaid CLI is not installed, so rendering is manual-only: open the README on GitHub to confirm. |
+| `US-02 / AC-01` | Readback; Mermaid render check | Passed: centered header with no logo or badges, workflow flowchart (with the branch step) and delegation flowchart present, no `init` line. After pushing `feature/readme-visual-format`, GitHub rendered both blocks as Mermaid iframes (884 px and 180 px tall) with no render error; the workflow chart was checked visually. |
 | `US-02 / AC-02` | Flag, message, and path checks | Passed: all 7 flags and 5 messages found in the scripts; `.claude/` entries added to the tree. |
 | `US-02 / AC-03` | Fence and link shell check | Passed: no untagged fences, no missing links, all anchors resolve. |
 
@@ -65,3 +65,4 @@ Passive documentation: no runnable RED test. Mermaid blocks are checked with the
 - 2026-11-17: Backlog drafted; pending approval.
 - 2026-11-17: Approved with all stories (user: "Aprobar, todas"). Assumptions accepted as written.
 - 2026-11-17: Added `references/visual-format.md`, wired it into `SKILL.md`, and applied it to `README.md`. Mermaid rendering not verified locally (no Mermaid CLI).
+- 2026-11-17: Pushed the branch; GitHub renders both Mermaid diagrams. All criteria passed.
