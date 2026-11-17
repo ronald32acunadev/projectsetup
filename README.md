@@ -76,6 +76,7 @@ All rules are in [`AGENTS.md`](AGENTS.md). The essentials:
 | :--- | :--- |
 | Language | Code, comments, docs, and commit messages are in English. Only translations (`README.es.md`, i18n catalogs) use other languages. |
 | Backlog approval | Before implementing, the agent saves a backlog of user stories (`US-01`, ...) to `docs/userstories/<feature-name>/README.md` and asks for approval. |
+| Backlog branches | On approval, pending work on a non-protected branch is committed and pushed, then `feature/<feature-name>` is created from it. Protected branches (`main`, `master`, the remote default) never get agent commits. |
 | Execution mode | The user chooses **all stories** (implemented in dependency order without asking again) or **one at a time** (stop for approval after each story). |
 | Story readiness | Each story has an actor, goal, and value; acceptance criteria with IDs such as `US-01 / AC-01`; and a verification method. No invented business rules. |
 | QA evidence | Tests derive from acceptance criteria or regression risks. Observe a failing test before implementing when a deterministic test exists. A story is complete only with observed evidence in its story file. |

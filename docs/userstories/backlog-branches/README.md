@@ -8,7 +8,7 @@
 
 - Backlog: Approved 2026-11-17.
 - Execution mode: All stories.
-- Implementation: In progress.
+- Implementation: Complete.
 
 ## Confirmed decisions
 
@@ -27,7 +27,7 @@
 
 **Statement:** As the repository owner, I want the agent to create a new branch when I approve a backlog, so that each backlog's work is isolated and reviewable on its own branch.
 
-**Status:** pending. **Dependencies:** none.
+**Status:** complete. **Dependencies:** none.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -40,7 +40,7 @@
 
 **Statement:** As the repository owner, I want pending changes on the current feature branch to be committed and pushed there before the new branch is created, so that unfinished work from the previous backlog is not mixed into the new one.
 
-**Status:** pending. **Dependencies:** `US-01`.
+**Status:** complete. **Dependencies:** `US-01`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -52,7 +52,7 @@
 
 **Statement:** As the repository owner, I want the agent to leave protected branches untouched, so that `main` only receives work through my own merges.
 
-**Status:** pending. **Dependencies:** `US-01`.
+**Status:** complete. **Dependencies:** `US-01`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -64,11 +64,11 @@ Passive documentation: there is no runnable RED test. Verification is structural
 
 | Story / criterion | Check | Observed result |
 | --- | --- | --- |
-| `US-01 / AC-01`, `AC-03` | Readback of the new rule in `AGENTS.md` | Pending |
-| `US-01 / AC-02`, `US-02 / AC-01` | Scratch repo with a local bare remote: run the rule's git steps; check `git log` on both branches and the remote | Pending |
-| `US-01 / AC-04` | `git diff --no-index AGENTS.md .agents/rules/AGENTS.md` | Pending |
-| `US-02 / AC-02` | Scratch repo with no remote: push fails, no new branch exists | Pending |
-| `US-02 / AC-03`, `US-03 / AC-01` | Readback | Pending |
+| `US-01 / AC-01`, `AC-03` | Readback of the new rule in `AGENTS.md` | Passed: `## Backlog Branches` steps 1 and 4; Workflow step 1 points to it. |
+| `US-01 / AC-02`, `US-02 / AC-01` | Scratch repo with a local bare remote: run the rule's git steps; check `git log` on both branches and the remote | Passed: `feat: wip` is on `feature/old` and `origin/feature/old` and only touches `wip.txt`; `feature/new` contains it and adds `docs: add new stories` as its first own commit. |
+| `US-01 / AC-04` | `git diff --no-index AGENTS.md .agents/rules/AGENTS.md` | Passed: no output. README Core rules table has a Backlog branches row. |
+| `US-02 / AC-02` | Scratch repo with no remote: push fails, no new branch exists | Passed: `git push` exits 128 (`'origin' does not appear to be a git repository`); only `feature/x` and `main` exist. The rule stops there. |
+| `US-02 / AC-03`, `US-03 / AC-01` | Readback | Passed: rule steps 2–3 and the closing "no pending changes" line. |
 
 ## Log
 
@@ -76,3 +76,4 @@ Passive documentation: there is no runnable RED test. Verification is structural
 - 2026-11-17: User confirmed "Commit y push" for pending changes. Backlog drafted; pending approval.
 - L2 (2026-11-17, verbatim): "Subir los cambios a  la rama que se estaba trabajando y hacer push  y aplicar los cambios a la nueva rama". Replaced assumption A3 with the confirmed decision; updated US-01 / AC-01 and US-02 / AC-01.
 - 2026-11-17: Approved with all stories (user: "Aprobar, todas"). Assumptions accepted as written.
+- 2026-11-17: Implemented `## Backlog Branches` in `AGENTS.md` and its copy, added the README row, and verified in scratch repos. Complete.
