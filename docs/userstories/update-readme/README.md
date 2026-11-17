@@ -10,9 +10,9 @@
 
 ## Approval and execution
 
-- Backlog: Pending user approval.
-- Execution mode: Pending selection (`all stories` or `one at a time`).
-- Implementation: Pending.
+- Backlog: Approved 2026-11-17.
+- Execution mode: All stories.
+- Implementation: Complete.
 
 ## Global constraints
 
@@ -34,30 +34,39 @@
 
 **Statement:** As a developer or agent adopting this template, I want a comprehensive and fully verified `README.md` based strictly on codebase facts, so that I can understand, bootstrap, configure, and maintain this setup template without encountering outdated or hallucinated instructions.
 
-**Status:** pending. **Dependencies:** none. **Route:** inline documentation.
+**Status:** complete. **Dependencies:** none. **Route:** inline documentation.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
-| `US-01 / AC-01` | **Archetype D Structure**: `README.md` includes Title & Badges, Overview with 6 Architectural Pillars, Quick Start (Bootstrap, Sync Verification), Included Assets & Directory Structure, Built-In Skills & Commands, Core Rules & Workflow Standards (including Backlog Approval, Execution Modes, and Story/QA Contract), Local LLM Code Delegation, Documentation Cache (`.context/`) & Engram Memory Protocol, Sync Invariant, Troubleshooting, and Contributing. | Structural readback against Archetype D Blueprint (`.agents/skills/update-readme/references/archetypes-and-checklists.md`). |
+| `US-01 / AC-01` | **Archetype D Structure**: `README.md` contains, in this order: Title and Overview; Quick Start (copying the template into a project, sync check); Included Assets and Directory Structure; Skills and Commands; Core Rules and Workflow (Backlog Approval, execution modes, Story Readiness and QA Evidence contracts); Local-Model Code Delegation (MCP providers, prompt rules, fallback script); Library Docs Cache (`.context/`) and Engram; Sync Invariant and Verification; Troubleshooting (only failure cases proven by script messages or rules); Contributing. No badges or License section, because the repository has no manifest or `LICENSE` file. | Structural readback against the Archetype D blueprint (`.agents/skills/update-readme/references/archetypes-and-checklists.md`). |
 | `US-01 / AC-02` | **Zero Hallucinated Commands**: Documented scripts (`scripts/ask_local_llm.py`, `scripts/configure_ollama_models.sh`), flags, paths (`.agents/rules/AGENTS.md`, `.opencode/commands/update-readme.md`), and MCP configurations (`pumbastudio` on 1234, `pumbalama` on 11434) match actual repository files. | Automated verification checking that every referenced file path exists on disk. |
 | `US-01 / AC-03` | **Accurate Workflow & Quality Contract**: Reflects the mandatory Backlog Approval workflow, file-first user story backlog path (`docs/userstories/{featurename}/README.md`), Story Readiness Contract, and QA Evidence/Traceability Contract established in `AGENTS.md`. | Semantic review against canonical `AGENTS.md`. |
-| `US-01 / AC-04` | **Format and Link Integrity**: Clean GFM markdown, copy-pasteable code blocks with language tags, and relative file links pointing to existing files. | Markdown lint check and file link verification. |
+| `US-01 / AC-04` | **Format and Link Integrity**: Every fenced code block has a language tag, and every relative link points to an existing file. `scripts/configure_ollama_models.sh` is described as owner-specific because it hardcodes `/run/media/pumba/DataBases/Models/Ollama`. | Shell check that lists fenced blocks without a language tag and relative links whose target is missing; expected output is empty. The repository has no Markdown linter. |
 
 **Implementation steps:**
-- [ ] Inspect HEAD `README.md` and codebase ground truth (`AGENTS.md`, `CLAUDE.md`, `scripts/`, `.agents/`, `.opencode/`).
-- [ ] Draft modernized `README.md` incorporating the latest Story & QA Quality Contract, file-first backlogs, and dynamic local LLM hierarchy.
-- [ ] Verify all file links, scripts, flags, and paths against disk.
-- [ ] Run structural verification checks and record evidence in this document.
+- [x] Inspect HEAD `README.md` and codebase ground truth (`AGENTS.md`, `CLAUDE.md`, `scripts/`, `.agents/`, `.opencode/`).
+- [x] Draft modernized `README.md` incorporating the latest Story & QA Quality Contract, file-first backlogs, and dynamic local LLM hierarchy.
+- [x] Verify all file links, scripts, flags, and paths against disk.
+- [x] Run structural verification checks and record evidence in this document.
 
 ## QA evidence and traceability mapping
 
 | Story / criterion or change-related regression risk | Test file and test name, or reproducible manual procedure | Observed result and evidence |
 | --- | --- | --- |
-| `US-01 / AC-01` | Structural review against Archetype D blueprint in `references/archetypes-and-checklists.md` | Pending until execution |
-| `US-01 / AC-02` | Verification script/checks confirming all referenced files and flags exist | Pending until execution |
-| `US-01 / AC-03` | Cross-check of Backlog Approval & QA Contract sections against `AGENTS.md` | Pending until execution |
-| `US-01 / AC-04` | Markdown link audit testing each `[text](./path)` link targets an existing file | Pending until execution |
+| `US-01 / AC-01` | Structural review against Archetype D blueprint in `references/archetypes-and-checklists.md` | Passed: all AC-01 sections are present in the listed order; no badges or License section. |
+| `US-01 / AC-02` | Verification script/checks confirming all referenced files and flags exist | Passed: all 7 documented flags are in `ask_local_llm.py`, all 5 troubleshooting messages are in the scripts, all referenced paths exist, and the MCP config matches `AGENTS.md`. |
+| `US-01 / AC-03` | Cross-check of Backlog Approval & QA Contract sections against `AGENTS.md` | Passed: the backlog path, execution modes, story readiness, QA evidence, and role rules summarize `AGENTS.md` without adding rules. |
+| `US-01 / AC-04` | Shell check for untagged fenced blocks and missing relative link targets | Passed: no untagged fences and no missing link targets. All 9 anchors resolve. The check flagged `local-model-code-delegation`, but that was its own error: GitHub keeps the hyphen in `Local-model`. |
+
+## Known discrepancies (out of scope)
+
+- `AGENTS.md` says `.context/` is ignored in `.gitignore`, but `.gitignore` has no `.context/` entry.
+- `scripts/__pycache__/ask_local_llm.cpython-314.pyc` is tracked by Git.
+
+The README will not claim `.context/` is gitignored. Fixing either item needs its own approved change.
 
 ## Log
 
 - 2026-11-07: Initial backlog created in response to `/update-readme`.
+- 2026-11-17: Backlog reviewed against the repository on `/update-readme`. Removed unproven items ("6 Architectural Pillars", badges, a Markdown lint step with no linter in the repo), and recorded the known discrepancies. Still pending approval.
+- 2026-11-17: Approved with all stories. Wrote `README.md` and recorded the verification results above.
