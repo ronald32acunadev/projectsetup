@@ -49,7 +49,7 @@ Load this skill when the user invokes `/update-readme` (or `$update-readme`) or 
 3. **Select Archetype**: Pick the blueprint from Decision Gate 2 and read [`references/archetypes-and-checklists.md`](./references/archetypes-and-checklists.md) for section order and cognitive-load formatting.
 4. **Detect Logo & Colors**: Find the project's logo and theme colors in tracked files per [`references/visual-format.md`](./references/visual-format.md). If none exist, use no logo and neutral defaults; never invent either.
 5. **Draft & Synchronize**: Write `README.md` in English using the house layout in [`references/visual-format.md`](./references/visual-format.md) (centered header, Mermaid diagram, alerts), and synchronize any companion `README.<lang>.md`.
-6. **Verify**: Confirm every documented command, flag, local file link, image path, and anchor exists in the repository with zero placeholders, and that each Mermaid block parses.
+6. **Verify**: Confirm every documented command, flag, local file link, image path, and anchor exists in the repository with zero placeholders, that each Mermaid block parses, and run the checklist in [`references/best-practices.md`](./references/best-practices.md).
 
 ## Output Contract
 
@@ -60,6 +60,7 @@ Return:
   - `Companion READMEs`: `<filename: exact line 1 H1>` (or `none`)
   - `Classification`: `<Bootstrap | Foreign/Overwritten | Drifted | Scoped>` + discrepancies fixed.
   - `Logo & Colors`: `<logo path | none>`, `<hex colors and their source file | none>`.
+- **Best Practices**: each checklist item as `pass`, `n/a` (reason), or `gap` (what is missing).
 - **Files Modified**: Clickable links to updated `README*.md` files.
 - **Verification Evidence**: Confirmation that all commands, flags, and file paths match the codebase.
 
@@ -67,3 +68,4 @@ Return:
 
 - [`references/archetypes-and-checklists.md`](./references/archetypes-and-checklists.md) — Ecosystem extraction matrix, archetype blueprints, cognitive-load rules, and anti-rationalization table.
 - [`references/visual-format.md`](./references/visual-format.md) — House visual format: centered header, logo and color detection, Mermaid theming, badges, alerts.
+- [`references/best-practices.md`](./references/best-practices.md) — Sourced README best-practices checklist (GitHub Docs, Standard Readme, Make a README).

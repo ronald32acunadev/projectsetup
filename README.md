@@ -8,7 +8,7 @@ Antigravity · Claude Code · Codex · Cursor · OpenCode
 
 </div>
 
-A reusable project setup template for AI coding agents. It ships one set of agent rules, a backlog-first workflow, local-model code delegation tooling, and a README skill that work the same way in every agent above.
+A reusable project setup template for AI coding agents. It ships one set of agent rules, a backlog-first workflow, local-model code delegation tooling, and a README skill that work the same way in every agent above. You keep one source of truth for how agents plan, branch, and delegate code, instead of a separate configuration per agent and per project.
 
 > [!NOTE]
 > The template has no application runtime, build, lint, or test suite. Projects that reuse it add their own commands.
@@ -191,8 +191,7 @@ On success it prints the model, elapsed seconds, token counts, and tokens per se
 
 Installs a systemd drop-in (`/etc/systemd/system/ollama.service.d/models.conf`) that sets `OLLAMA_MODELS` for the system Ollama service, then restarts it.
 
-> [!IMPORTANT]
-> The model path is hardcoded to the owner's machine (`/run/media/pumba/DataBases/Models/Ollama`). Edit `MODELS` in the script before using it elsewhere.
+**Owner-specific:** the model path is hardcoded to the owner's machine (`/run/media/pumba/DataBases/Models/Ollama`). Edit `MODELS` in the script before using it elsewhere.
 
 ```bash
 sudo sh scripts/configure_ollama_models.sh
@@ -227,6 +226,8 @@ Local models have fixed knowledge cutoffs, so every code request includes a Libr
 | `Different configuration already exists at ...` | The script refuses to overwrite an existing drop-in. Review `/etc/systemd/system/ollama.service.d/models.conf` manually. |
 
 ## Contributing
+
+Maintained by [@ronald32acunadev](https://github.com/ronald32acunadev). Ask questions or report problems in this repository's [issues](https://github.com/ronald32acunadev/projectsetup/issues); propose changes as pull requests against `main`.
 
 - Follow the backlog and QA rules in [`AGENTS.md`](AGENTS.md).
 - Use Conventional Commits with no AI attribution lines.

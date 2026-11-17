@@ -8,7 +8,7 @@
 
 - Backlog: Approved 2026-11-17.
 - Execution mode: All stories.
-- Implementation: In progress.
+- Implementation: Complete.
 
 ## Assumptions (confirm or revise at approval)
 
@@ -21,7 +21,7 @@
 
 **Statement:** As the repository owner, I want `update-readme` to follow README best practices, so that every README it writes answers what the project does, why it is useful, how to start, where to get help, and who maintains it.
 
-**Status:** pending. **Dependencies:** none.
+**Status:** complete. **Dependencies:** none.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -36,12 +36,13 @@ Passive documentation: no runnable RED test.
 
 | Story / criterion | Check | Observed result |
 | --- | --- | --- |
-| `US-01 / AC-01`, `AC-02` | Readback of `best-practices.md`; source URLs opened | Pending |
-| `US-01 / AC-03` | Readback of `SKILL.md`; link check | Pending |
-| `US-01 / AC-04` | Checklist applied to `README.md`; per-item result | Pending |
+| `US-01 / AC-01`, `AC-02` | Readback of `best-practices.md`; source URLs opened | Passed: 19 items (C1–C7, S1–S5, L1–L7), each with a source tag and an "If missing" rule. All four sources were fetched on 2026-11-17. Conflict found and fixed: `visual-format.md` allowed one alert per section; GitHub Docs says one or two per article, so the visual format now follows that. |
+| `US-01 / AC-03` | Readback of `SKILL.md`; link check | Passed: Verify step 6 runs the checklist; Output Contract has a Best Practices line; References links the file. No broken links. |
+| `US-01 / AC-04` | Checklist applied to `README.md`; per-item result | Passed with one gap. pass: C1, C2 (added a "why" sentence), C3, C4 (added issues link; page returns HTTP 200), C5 (added maintainer and PR line), C6, S1 (`projectsetup`), S2 (tagline under 120 characters), S3 (233 lines; table of contents covers all 9 other H2s), S5, L1, L2, L3, L5 (reduced 3 alerts to 2, not consecutive), L6 (11,828 bytes). n/a: C7 (active project), L4 (no images), L7 (no translations). gap: S4, no `LICENSE` file, so no License section; choosing a license is the owner's decision. |
 
 ## Log
 
 - L1 (2026-11-17, verbatim): "Tambien me gustaria que a la hora de crear el readme tambien siga las mejores practicas a la hora de crear el readme"
 - 2026-11-17: Backlog drafted; pending approval.
 - 2026-11-17: Approved with all stories (user: "Aprobar, todas"). Assumptions accepted as written.
+- 2026-11-17: Added `references/best-practices.md`, wired it into `SKILL.md`, and applied it to `README.md`. One gap: no `LICENSE` file.

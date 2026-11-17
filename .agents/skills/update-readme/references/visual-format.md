@@ -64,7 +64,7 @@ Colors reach the README only through GitHub-safe channels:
 
 | Element | Use for | Syntax |
 | :--- | :--- | :--- |
-| Alerts | One important warning or tip per section, at most | `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]` |
+| Alerts | One or two per README, never two in a row (GitHub Docs guidance) | `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]` |
 | Collapsible | Long references (full flag lists, config dumps) | `<details><summary>Title</summary>` … `</details>` |
 | Tables | Flags, env vars, files, comparisons | GFM tables |
 | Code blocks | Every command; always with a language tag | ` ```bash `, ` ```json `, ` ```mermaid ` |
