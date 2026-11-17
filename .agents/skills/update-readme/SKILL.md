@@ -19,6 +19,7 @@ Load this skill when the user invokes `/update-readme` (or `$update-readme`) or 
 - **Detect Foreign/Overwritten READMEs**: If `README.md` has a different H1 title or describes a bootstrap template instead of the manifest's project, classify it as **Foreign/Overwritten** and rebuild it from codebase facts and any valid `README.<lang>.md`.
 - **Read CLI entrypoints, not just manifests**: Inspect `bin`/`main` targets and router/help modules to capture real subcommands, slash commands, and flags.
 - **Zero hallucinated commands or dead sections**: Document only scripts, flags, and env vars proven to exist in code. Omit irrelevant boilerplate headings.
+- **GitHub-safe visuals only**: Logos and colors come from tracked files; colors reach the README only through Mermaid `themeVariables` and badge colors, never CSS.
 - **Artifact language**: Write `README.md` in English (`AGENTS.md`). Keep translated prose in `README.<lang>.md` and synchronize all language files.
 
 ## Decision Gates
@@ -46,8 +47,9 @@ Load this skill when the user invokes `/update-readme` (or `$update-readme`) or 
 1. **Extract Codebase Ground Truth**: Read the root manifest and the CLI/entrypoint/router/help source files wired in `bin`/`main` per [`references/archetypes-and-checklists.md`](./references/archetypes-and-checklists.md).
 2. **Read & Audit All `README*.md` Files**: List `README*` at the root, read the contents of `README.md` and every `README.<lang>.md`, and compare each file's H1 title and sections against the manifest via Decision Gate 1.
 3. **Select Archetype**: Pick the blueprint from Decision Gate 2 and read [`references/archetypes-and-checklists.md`](./references/archetypes-and-checklists.md) for section order and cognitive-load formatting.
-4. **Draft & Synchronize**: Update `README.md` in English and synchronize any companion `README.<lang>.md`.
-5. **Verify**: Confirm every documented command, flag, and local file link exists in the repository with zero placeholders.
+4. **Detect Logo & Colors**: Find the project's logo and theme colors in tracked files per [`references/visual-format.md`](./references/visual-format.md). If none exist, use no logo and neutral defaults; never invent either.
+5. **Draft & Synchronize**: Write `README.md` in English using the house layout in [`references/visual-format.md`](./references/visual-format.md) (centered header, Mermaid diagram, alerts), and synchronize any companion `README.<lang>.md`.
+6. **Verify**: Confirm every documented command, flag, local file link, image path, and anchor exists in the repository with zero placeholders, and that each Mermaid block parses.
 
 ## Output Contract
 
@@ -57,9 +59,11 @@ Return:
   - `Existing README.md H1`: `<exact line 1 H1 of README.md>`
   - `Companion READMEs`: `<filename: exact line 1 H1>` (or `none`)
   - `Classification`: `<Bootstrap | Foreign/Overwritten | Drifted | Scoped>` + discrepancies fixed.
+  - `Logo & Colors`: `<logo path | none>`, `<hex colors and their source file | none>`.
 - **Files Modified**: Clickable links to updated `README*.md` files.
 - **Verification Evidence**: Confirmation that all commands, flags, and file paths match the codebase.
 
 ## References
 
 - [`references/archetypes-and-checklists.md`](./references/archetypes-and-checklists.md) — Ecosystem extraction matrix, archetype blueprints, cognitive-load rules, and anti-rationalization table.
+- [`references/visual-format.md`](./references/visual-format.md) — House visual format: centered header, logo and color detection, Mermaid theming, badges, alerts.
