@@ -42,5 +42,5 @@ python3 scripts/ask_local_llm.py --user request.md --out answer.md --code-out fi
 
 ## Repository hygiene
 
-- `.atl/` and `.codegraph/` are local tooling state; `.claude/` and `.superpowers/` are gitignored. Stage files explicitly, never with a blanket `git add`.
+- `.atl/` and `.codegraph/` are local tooling state, and `.superpowers/` is gitignored. `.claude/` is tracked: it holds the Claude Code `/update-readme` command, project skills, and `launch.json`. Stage files explicitly, never with a blanket `git add`.
 - User-story backlogs live in `docs/userstories/<feature-name>/README.md` (see AGENTS.md).
