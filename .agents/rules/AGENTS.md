@@ -26,6 +26,20 @@ The user's explicit approval and execution choice authorize only that backlog:
 
 Track each story as pending, in progress, blocked, or complete in the feature's user-story file; complete requires observed acceptance checks. Update that file after each story and approved scope revision, reporting only a concise summary and link in chat. If another feature/task document is required, link it rather than duplicating its execution log or creating competing story trackers. Read-only questions do not require an implementation backlog.
 
+## Backlog Branches (MANDATORY)
+
+Every approved backlog is implemented on its own branch. Protected branches are the remote's default branch (`git symbolic-ref refs/remotes/origin/HEAD`), `main`, and `master`.
+
+When the user approves a backlog and chooses an execution mode, before the first implementation edit:
+
+1. **Reuse**: if `feature/{featurename}` already exists for this same backlog (a revision or follow-up), switch to it and skip the remaining steps. For an unrelated feature with a colliding name, use the distinct name chosen for its backlog.
+2. **Save pending work on a non-protected branch**: if the current branch is not protected and has uncommitted changes other than the new backlog file, stage those files explicitly (never a blanket `git add`), commit them with a Conventional Commit message, and push that branch (`git push -u origin <branch>` when it has no upstream). If the push fails, stop: keep the commit, do not create the new branch, and report the exact error.
+3. **Protect main branches**: if the current branch is protected and has uncommitted changes other than the new backlog file, never commit or push to it. List the pending files and ask whether to move them to the new branch or leave them out of it, then wait for the answer.
+4. **Create the branch**: create `feature/{featurename}` from the current branch, so it contains the work saved in step 2, and switch to it (`git switch -c feature/{featurename}`).
+5. **Commit the backlog first**: commit `docs/userstories/{featurename}/README.md` as the first commit on the new branch, never on the previous one.
+
+With no pending changes, skip steps 2 and 3. These steps authorize only the commit and push of the previous non-protected branch described above; merging, pull requests, and pushes of other branches remain the user's decision.
+
 ## Story Readiness Contract (MANDATORY)
 
 Before requesting backlog approval, review every story against this contract:
@@ -105,7 +119,7 @@ Local models are the owner's dedicated code synthesizers, exposed to agents as M
 
 ## Workflow
 
-1. **Explore, Plan, and Obtain Approval**: Prepare and review the complete backlog in `docs/userstories/{featurename}/README.md` of the active project, automatically naming the feature from the request as described above. Share only a short summary and file link in chat, then obtain explicit approval and the all-stories or one-at-a-time choice before implementation. Do not ask local models to explore; they have no filesystem or repository access.
+1. **Explore, Plan, and Obtain Approval**: Prepare and review the complete backlog in `docs/userstories/{featurename}/README.md` of the active project, automatically naming the feature from the request as described above. Share only a short summary and file link in chat, then obtain explicit approval and the all-stories or one-at-a-time choice before implementation. On approval, move to the backlog's branch as described in Backlog Branches. Do not ask local models to explore; they have no filesystem or repository access.
 2. **Resolve Library Facts (Cache-Aside Flow)**: Before every code request, resolve the current state of every library the task touches using the `.context/` cache or Context7, and build the Library Context Brief. Never send a code request without it.
 3. **Prepare Prompt**:
    - Select the implementer through the hierarchy above. Call `pumbastudio`, `pumbalama`, or the available lightweight hosted implementer with a self-contained prompt that follows the Prompt Template below.

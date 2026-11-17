@@ -1,8 +1,17 @@
+<div align="center">
+
 # projectsetup
 
-A reusable project setup template for AI coding agents. It ships one set of agent rules, a backlog-first workflow, local-model code delegation tooling, and a README skill that work the same way in Antigravity, Claude Code, Codex, Cursor, and OpenCode.
+**One set of rules for every AI coding agent: backlog first, a branch per backlog, code from local models.**
 
-The template has no application runtime, build, lint, or test suite. Projects that reuse it add their own commands.
+Antigravity · Claude Code · Codex · Cursor · OpenCode
+
+</div>
+
+A reusable project setup template for AI coding agents. It ships one set of agent rules, a backlog-first workflow, local-model code delegation tooling, and a README skill that work the same way in every agent above. You keep one source of truth for how agents plan, branch, and delegate code, instead of a separate configuration per agent and per project.
+
+> [!NOTE]
+> The template has no application runtime, build, lint, or test suite. Projects that reuse it add their own commands.
 
 ## Contents
 
@@ -17,6 +26,42 @@ The template has no application runtime, build, lint, or test suite. Projects th
 - [Contributing](#contributing)
 
 ## Quick start
+
+There are two ways to use the template. The global skills keep every project pointed at this folder, so rule changes here reach all projects with nothing to copy.
+
+### Option A: global skills (recommended)
+
+Install the skills into every agent you have:
+
+```bash
+sh scripts/install_skills.sh
+```
+
+Then, in any project, invoke the skill you need:
+
+| Skill | What it does |
+| :--- | :--- |
+| `/pumba-projectsetup` | Reads this folder's `AGENTS.md` and applies all of it for the session: backlogs, branches, story and QA contracts, local-model delegation, and self-learning. Rejected local-model answers add a rule to the central `.agents/local-llm-prompt-rules.md`, shared by all projects. Writes no files into the project. |
+| `/pumba-update-readme` | Runs the [`update-readme`](.agents/skills/update-readme/SKILL.md) skill on the current project's README. |
+
+The installer writes a small `SKILL.md` per agent that holds this folder's absolute path. It installs only for agents whose config folder exists:
+
+| Agent | Config folder | Skills folder |
+| :--- | :--- | :--- |
+| Claude Code | `~/.claude` | `~/.claude/skills` |
+| Codex | `~/.codex` | `~/.codex/skills` |
+| OpenCode | `~/.config/opencode` | `~/.config/opencode/skills` |
+| Antigravity | `~/.gemini/config` | `~/.gemini/config/skills` |
+
+| Flag | Description |
+| :--- | :--- |
+| `--dry-run` | Prints what would change, prefixed with `[dry-run]`, and changes nothing. |
+| `--uninstall` | Removes only the skill folders this installer created. |
+| `-h`, `--help` | Prints the usage line. |
+
+Rerun it after moving this folder; rule edits need no reinstall. It never overwrites a skill folder it did not create: it reports a `conflict` and exits with code 1.
+
+### Option B: copy into a project
 
 1. Copy the template files into the root of your project:
 
@@ -45,12 +90,18 @@ The template has no application runtime, build, lint, or test suite. Projects th
 │   ├── rules/AGENTS.md               # Byte-identical copy of AGENTS.md
 │   ├── local-llm-guide.md            # Guide for prompting a 32k-context local model
 │   ├── local-llm-prompt-rules.md     # System message for every local code request
+│   ├── global-skills/                # Templates for pumba-* skills, rendered by the installer
 │   └── skills/update-readme/         # README audit/update skill
+├── .claude/
+│   ├── commands/update-readme.md     # Exposes the skill as /update-readme in Claude Code
+│   ├── skills/sync-llmtuner/         # Project skill for the llm-tuner site
+│   └── launch.json                   # Claude Code preview server configurations
 ├── .opencode/commands/update-readme.md  # Exposes the skill as /update-readme in OpenCode
 ├── docs/userstories/                 # One backlog per feature
 └── scripts/
     ├── ask_local_llm.py              # Fallback client for local models
-    └── configure_ollama_models.sh    # Owner-specific Ollama model-path setup
+    ├── configure_ollama_models.sh    # Owner-specific Ollama model-path setup
+    └── install_skills.sh             # Installs pumba-* skills into every agent
 ```
 
 | File | Purpose |
@@ -64,9 +115,14 @@ The template has no application runtime, build, lint, or test suite. Projects th
 
 | Skill | Location | Invocation |
 | :--- | :--- | :--- |
-| `update-readme` | [`.agents/skills/update-readme/SKILL.md`](.agents/skills/update-readme/SKILL.md) | `/update-readme` in Claude Code and OpenCode ([`.opencode/commands/update-readme.md`](.opencode/commands/update-readme.md)) |
+| `update-readme` | [`.agents/skills/update-readme/SKILL.md`](.agents/skills/update-readme/SKILL.md) | `/update-readme` in Claude Code ([`.claude/commands/update-readme.md`](.claude/commands/update-readme.md)) and OpenCode ([`.opencode/commands/update-readme.md`](.opencode/commands/update-readme.md)) |
 
-`update-readme` audits, creates, or updates `README.md` and any `README.<lang>.md`. Its core rule: every command, flag, and path in a README must be proven by repository files. Section blueprints per project type live in [`references/archetypes-and-checklists.md`](.agents/skills/update-readme/references/archetypes-and-checklists.md).
+`update-readme` audits, creates, or updates `README.md` and any `README.<lang>.md`. Its core rule: every command, flag, and path in a README must be proven by repository files.
+
+| Reference | Defines |
+| :--- | :--- |
+| [`archetypes-and-checklists.md`](.agents/skills/update-readme/references/archetypes-and-checklists.md) | Which sections a README has, per project type. |
+| [`visual-format.md`](.agents/skills/update-readme/references/visual-format.md) | How it looks: centered header, the project's logo and colors when tracked files define them, Mermaid diagrams, alerts. |
 
 ## Core rules and workflow
 
@@ -76,23 +132,48 @@ All rules are in [`AGENTS.md`](AGENTS.md). The essentials:
 | :--- | :--- |
 | Language | Code, comments, docs, and commit messages are in English. Only translations (`README.es.md`, i18n catalogs) use other languages. |
 | Backlog approval | Before implementing, the agent saves a backlog of user stories (`US-01`, ...) to `docs/userstories/<feature-name>/README.md` and asks for approval. |
+| Backlog branches | On approval, pending work on a non-protected branch is committed and pushed, then `feature/<feature-name>` is created from it. Protected branches (`main`, `master`, the remote default) never get agent commits. |
 | Execution mode | The user chooses **all stories** (implemented in dependency order without asking again) or **one at a time** (stop for approval after each story). |
 | Story readiness | Each story has an actor, goal, and value; acceptance criteria with IDs such as `US-01 / AC-01`; and a verification method. No invented business rules. |
 | QA evidence | Tests derive from acceptance criteria or regression risks. Observe a failing test before implementing when a deterministic test exists. A story is complete only with observed evidence in its story file. |
 | Roles | A reasoning model plans and reviews. Code is written by a local model first, then a lightweight hosted model; the planner writes code only with explicit user authorization. |
 | Commits | Conventional Commits, no AI attribution lines. |
 
-Workflow per change:
+### Workflow per change
 
-1. Explore, write the backlog, and get approval plus an execution mode.
-2. Resolve library facts and build a Library Context Brief.
-3. Send a self-contained prompt to the implementer.
-4. Review the answer; add a rule to `.agents/local-llm-prompt-rules.md` for each rejected part.
-5. Apply, run the acceptance checks, and record results in the story file.
+```mermaid
+flowchart TD
+    A[Request] --> B[Explore and write backlog<br/>docs/userstories/feature-name/README.md]
+    B --> C{User approves?<br/>all stories or one at a time}
+    C -- revise --> B
+    C -- approved --> D{Current branch<br/>protected?}
+    D -- no --> E[Commit and push<br/>pending work]
+    D -- yes, with pending work --> F[Ask what to do<br/>with pending files]
+    E --> G[Create feature/feature-name<br/>commit backlog first]
+    F --> G
+    G --> H[Library Context Brief]
+    H --> I[Local model writes code]
+    I --> J{Review passes?}
+    J -- no --> K[Add rule to<br/>local-llm-prompt-rules.md]
+    K --> I
+    J -- yes --> L[Apply, run acceptance checks,<br/>record evidence in story file]
+```
+
+> [!WARNING]
+> Agents never commit or push to protected branches (`main`, `master`, the remote default). Merges and pull requests stay with you.
 
 ## Local-model code delegation
 
 Source code, tests, and scripts are synthesized by a local model. Docs, config, and commit messages are written by the agent. Model names are never hardcoded: the agent uses whichever model is loaded.
+
+```mermaid
+flowchart LR
+    R[Code request] --> S[pumbastudio<br/>LM Studio :1234]
+    S -- unreachable or fails --> O[pumbalama<br/>Ollama :11434]
+    O -- unreachable or fails --> H[Lightweight<br/>hosted model]
+    S -. MCP timeout .-> P[scripts/ask_local_llm.py]
+    O -. MCP timeout .-> P
+```
 
 | Priority | Provider | Server | Port | MCP tool (Claude Code name) |
 | :--- | :--- | :--- | :--- | :--- |
@@ -146,7 +227,9 @@ On success it prints the model, elapsed seconds, token counts, and tokens per se
 
 ### Ollama model directory: `configure_ollama_models.sh`
 
-Installs a systemd drop-in (`/etc/systemd/system/ollama.service.d/models.conf`) that sets `OLLAMA_MODELS` for the system Ollama service, then restarts it. The model path is hardcoded to the owner's machine (`/run/media/pumba/DataBases/Models/Ollama`); edit `MODELS` in the script before using it elsewhere.
+Installs a systemd drop-in (`/etc/systemd/system/ollama.service.d/models.conf`) that sets `OLLAMA_MODELS` for the system Ollama service, then restarts it.
+
+**Owner-specific:** the model path is hardcoded to the owner's machine (`/run/media/pumba/DataBases/Models/Ollama`). Edit `MODELS` in the script before using it elsewhere.
 
 ```bash
 sudo sh scripts/configure_ollama_models.sh
@@ -181,6 +264,8 @@ Local models have fixed knowledge cutoffs, so every code request includes a Libr
 | `Different configuration already exists at ...` | The script refuses to overwrite an existing drop-in. Review `/etc/systemd/system/ollama.service.d/models.conf` manually. |
 
 ## Contributing
+
+Maintained by [@ronald32acunadev](https://github.com/ronald32acunadev). Ask questions or report problems in this repository's [issues](https://github.com/ronald32acunadev/projectsetup/issues); propose changes as pull requests against `main`.
 
 - Follow the backlog and QA rules in [`AGENTS.md`](AGENTS.md).
 - Use Conventional Commits with no AI attribution lines.

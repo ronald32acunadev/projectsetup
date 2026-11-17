@@ -4,6 +4,6 @@ agent: gentle-orchestrator
 subtask: true
 ---
 
-Load `.agents/skills/update-readme/SKILL.md` first, then execute its 5-step README audit and update workflow.
+Load `.agents/skills/update-readme/SKILL.md` first, then execute its 6-step README audit and update workflow.
 
 Scope / user arguments: $ARGUMENTS
