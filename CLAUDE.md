@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-A reusable project setup template: AI coding agent rules, workflow standards, local-model delegation tooling, and skills. It has no application runtime, build, lint, or test suite. Projects that reuse the template add their own commands.
+A reusable project setup template: AI coding agent rules, workflow standards, local-model delegation tooling, and skills. It has no application runtime, build, or lint. Its only tests cover `scripts/`: run `python3 -m pytest tests/ -q -p no:cacheprovider`. Projects that reuse the template add their own commands.
 
 ## Rule files and the sync invariant
 
@@ -23,7 +23,7 @@ No output means they are in sync.
 
 ## Local-model delegation tooling
 
-AGENTS.md requires creating and editing source code, tests, and scripts to be delegated to a local model; docs, config, and commit messages are written by the agent. In Claude Code the MCP tools are `mcp__pumbastudio__openai_chat` (LM Studio, primary) and `mcp__pumbalama__chat_completion` (Ollama, secondary).
+AGENTS.md requires creating and editing source code, tests, and scripts to be delegated to a local model; docs, config, and commit messages are written by the agent. A story that changes executable code is complete only with committed, passing tests for its criteria; docs- and config-only stories use structural or manual checks. In Claude Code the MCP tools are `mcp__pumbastudio__openai_chat` (LM Studio, primary) and `mcp__pumbalama__chat_completion` (Ollama, secondary).
 
 - `.agents/local-llm-prompt-rules.md` is the system message pasted into every code request. Append a short rule whenever a review rejects part of a local-model answer.
 - `.agents/code-generation-instructions.md` holds stable best practices for creating and editing code; it goes into the system message before the rules file, for local and hosted implementers.

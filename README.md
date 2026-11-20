@@ -11,7 +11,7 @@ Antigravity · Claude Code · Codex · Cursor · OpenCode
 A reusable project setup template for AI coding agents. It ships one set of agent rules, a backlog-first workflow, local-model code delegation tooling, and a README skill that work the same way in every agent above. You keep one source of truth for how agents plan, branch, and delegate code, instead of a separate configuration per agent and per project.
 
 > [!NOTE]
-> The template has no application runtime, build, lint, or test suite. Projects that reuse it add their own commands.
+> The template has no application runtime, build, or lint. Its only tests cover `scripts/` (`python3 -m pytest tests/ -q -p no:cacheprovider`). Projects that reuse it add their own commands.
 
 ## Contents
 
@@ -99,10 +99,11 @@ Rerun it after moving this folder; rule edits need no reinstall. It never overwr
 │   └── launch.json                   # Claude Code preview server configurations
 ├── .opencode/commands/update-readme.md  # Exposes the skill as /update-readme in OpenCode
 ├── docs/userstories/                 # One backlog per feature
-└── scripts/
-    ├── ask_local_llm.py              # Fallback client for local models
-    ├── configure_ollama_models.sh    # Owner-specific Ollama model-path setup
-    └── install_skills.sh             # Installs pumba-* skills into every agent
+├── scripts/
+│   ├── ask_local_llm.py              # Fallback client for local models
+│   ├── configure_ollama_models.sh    # Owner-specific Ollama model-path setup
+│   └── install_skills.sh             # Installs pumba-* skills into every agent
+└── tests/test_ask_local_llm.py       # pytest tests for ask_local_llm.py
 ```
 
 | File | Purpose |
@@ -136,7 +137,7 @@ All rules are in [`AGENTS.md`](AGENTS.md). The essentials:
 | Backlog branches | On approval, pending work on a non-protected branch is committed and pushed, then `feature/<feature-name>` is created from it. Protected branches (`main`, `master`, the remote default) never get agent commits. |
 | Execution mode | The user chooses **all stories** (implemented in dependency order without asking again) or **one at a time** (stop for approval after each story). |
 | Story readiness | Each story has an actor, goal, and value; acceptance criteria with IDs such as `US-01 / AC-01`; and a verification method. No invented business rules. |
-| QA evidence | Tests derive from acceptance criteria or regression risks. Observe a failing test before implementing when a deterministic test exists. A story is complete only with observed evidence in its story file. |
+| QA evidence | Tests derive from acceptance criteria or regression risks. Observe a failing test before implementing when a deterministic test exists. A story is complete only with observed evidence in its story file; a story that changes executable code also needs committed, passing tests for its criteria (docs and config stories use structural or manual checks). |
 | Roles | A reasoning model plans and reviews. Code is created and edited by a local model first, then by the lightest hosted model at high reasoning effort; the planner writes code only with explicit user authorization. |
 | Commits | Conventional Commits, no AI attribution lines. |
 

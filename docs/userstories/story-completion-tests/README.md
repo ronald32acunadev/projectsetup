@@ -6,9 +6,9 @@
 
 ## Approval and execution
 
-- Backlog: Pending approval.
-- Execution mode: Not selected.
-- Implementation: Not started.
+- Backlog: Approved 2026-11-20.
+- Execution mode: All stories.
+- Implementation: Complete (tests by local model `zai-org/glm-4.7-flash`, finished by the lightweight hosted implementer at high effort; see Log).
 
 ## Confirmed decisions
 
@@ -28,7 +28,7 @@
 
 **Statement:** As the repository owner, I want every completed story that changes executable code to leave committed automated tests for its acceptance criteria, so that any later change can rerun the proof.
 
-**Status:** pending. **Dependencies:** none.
+**Status:** complete. **Dependencies:** none.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -42,7 +42,7 @@
 
 **Statement:** As the repository owner, I want committed tests for the system-message behavior of `scripts/ask_local_llm.py`, so that the previous feature's script change follows the new rule.
 
-**Status:** pending. **Dependencies:** `US-01`.
+**Status:** complete. **Dependencies:** `US-01`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -55,8 +55,17 @@
 
 | Story / criterion | Check | Observed result |
 | --- | --- | --- |
-| `US-01 / AC-01` to `US-02 / AC-04` | As listed in each story | Pending |
+| `US-01 / AC-01` to `AC-04` | Readback of `AGENTS.md` (Track each story; QA contract) and `.agents/local-llm-guide.md` | Passed. |
+| `US-01 / AC-05` | `git diff --no-index AGENTS.md .agents/rules/AGENTS.md`; readback of `README.md`, `CLAUDE.md` | Passed: no output; both summaries mention the rule. |
+| `US-02 / AC-01` | `tests/test_ask_local_llm.py::test_system_message_order_extra_then_instructions_then_rules`, `::test_reasoning_off_without_think` | Passed (`5 passed`). Against the pre-feature script (`7ccf2aa`) the order test fails, as expected. |
+| `US-02 / AC-02` | `tests/test_ask_local_llm.py::test_missing_instructions_exits_without_request` | Passed; fails against the pre-feature script (`AttributeError: INSTRUCTIONS`). |
+| `US-02 / AC-03` | `tests/test_ask_local_llm.py::test_code_out_saves_first_code_block` | Passed. |
+| Regression risk: `--think` unchanged | `tests/test_ask_local_llm.py::test_think_keeps_reasoning_on` | Passed on both the current and pre-feature script. |
+| `US-02 / AC-04` | Readback of `CLAUDE.md` and `README.md` | Passed: both give `python3 -m pytest tests/ -q -p no:cacheprovider`. |
 
 ## Log
 
 - 2026-11-20: Backlog drafted; exemption "A" confirmed by the user.
+- 2026-11-20: Approved, all stories; branch `feature/story-completion-tests` created from `feature/local-model-delegation-prompting`.
+- 2026-11-20: Local model's first test file had a module-level `importlib` use before its import, unused `typing` imports, and a missing-instructions test without `req.md` (failed with `FileNotFoundError`). One focused correction fixed only the imports. Per the hierarchy, the lightweight hosted implementer (high effort, allowed file `tests/test_ask_local_llm.py` only) applied the remaining fixes; the planner reviewed the diff and reran the tests. Two reusable rules were added to `.agents/local-llm-prompt-rules.md`.
+- 2026-11-20: `-p no:cacheprovider` keeps pytest from writing `.pytest_cache/`; `scripts/__pycache__/` is tracked in git and gets rewritten by imports, so restore it before staging.

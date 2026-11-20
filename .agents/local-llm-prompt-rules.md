@@ -21,4 +21,6 @@ Paste this list into the system message of every code request to a local model. 
 - Tests: pytest functions with `tmp_path`; never write to `/tmp`; never patch a whole module; import every name used.
 - Tests: keep each requested test's name, inputs, and assertions exactly; assert exact values.
 
+- Put every import at the top of the file; never inside a function or fixture.
+- In a correction request, apply every numbered fix; return the file only when all are done.
 - Always copy exact relative import paths with extensions verbatim from the prompt; never shorten them to bare module names.
