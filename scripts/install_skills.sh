@@ -8,7 +8,7 @@ fail() {
 
 MARKER='<!-- managed-by: projectsetup/scripts/install_skills.sh -->'
 USAGE='Usage: sh scripts/install_skills.sh [--dry-run] [--uninstall]'
-SKILLS='pumba-projectsetup pumba-update-readme'
+SKILLS='pumba-projectsetup pumba-projectsetup-ai pumba-update-readme'
 
 MODE=install
 DRY_RUN=0
