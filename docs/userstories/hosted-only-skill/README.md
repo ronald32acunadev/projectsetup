@@ -8,12 +8,13 @@
 
 - Backlog: Approved 2026-11-20.
 - Execution mode: All stories.
-- Implementation: Complete (installer change and tests by the lightweight hosted implementer at high effort; see Log).
+- Implementation: Complete (installer change and tests by the lightweight hosted implementer at high effort; see Log). Revision R1 approved 2026-11-20 and complete.
 
 ## Confirmed decisions
 
 - 2026-11-20: **Keep the existing flow unchanged.** `/pumba-projectsetup` keeps the local-first delegation; the new behavior lives only in a separate skill chosen at session start (user: "mantener todo como está ... por medio de la skill que llame al inicio decide que flujo va a utilizar").
 - 2026-11-20: **Planner:** the model the user selected in the agent. **Implementer:** a smaller hosted model at high reasoning effort for creating and editing code (user: "en la planeación ejecute el modelo seleccionado, pero cuando tenga que escribir código o editar código utilice un modelo más bajo").
+- 2026-11-20: **Revision R1 — tests stay with the selected model:** in the hosted-only flow, the selected model writes and edits tests; the lightweight implementer creates and edits only source code and scripts (user: "Los test nada más", answering whether tests and scripts should stay with the selected model).
 - 2026-11-20: **Dynamic selection (B):** the skill names no model; it uses the lightest model the current agent offers, at high effort (user answer: "B").
 
 ## Assumptions (confirm or revise at approval)
@@ -27,14 +28,15 @@
 
 ### US-01 — Hosted-only skill template
 
-**Statement:** As the repository owner, I want a `/pumba-projectsetup-ai` skill, so that I can run a session where my selected model plans and a lighter high-effort model writes and edits the code, with no local models.
+**Statement:** As the repository owner, I want a `/pumba-projectsetup-ai` skill, so that I can run a session where my selected model plans and writes tests and a lighter high-effort model writes and edits the code, with no local models.
 
-**Status:** complete. **Dependencies:** none.
+**Status:** complete (R1 applied). **Dependencies:** none.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
 | `US-01 / AC-01` | `.agents/global-skills/pumba-projectsetup-ai/SKILL.md` has valid frontmatter (`name: pumba-projectsetup-ai`, a `description` that names the hosted-only flow), the installer's `managed-by` marker, and tells the agent to read `{{PROJECTSETUP_DIR}}/AGENTS.md` and apply all of it except the local-provider steps. | Readback. |
-| `US-01 / AC-02` | It states: never call `pumbastudio`, `pumbalama`, or `scripts/ask_local_llm.py`; planning and review stay with the selected model; creating and editing code, tests, and scripts go to the lightest model the agent offers at high effort, chosen dynamically, with no model names (A2, A3). | Readback; `grep` finds no model IDs. |
+| `US-01 / AC-02` | It states: never call `pumbastudio`, `pumbalama`, or `scripts/ask_local_llm.py`; planning and review stay with the selected model; creating and editing source code and scripts go to the lightest model the agent offers at high effort, chosen dynamically, with no model names (A2, A3). | Readback; `grep` finds no model IDs. |
+| `US-01 / AC-05` | (R1) It states that the selected model writes and edits tests itself, from the approved criteria and following `.agents/code-generation-instructions.md` and the QA contract; the implementer never writes tests. `pumba-projectsetup` and `AGENTS.md` are unchanged. | Readback; `git diff` on `AGENTS.md` and `pumba-projectsetup/SKILL.md` is empty. |
 | `US-01 / AC-03` | It keeps the central tooling paths for the instructions and rules files, self-learning (A4), project-local work, and precedence rules of `pumba-projectsetup`. | Readback against `pumba-projectsetup/SKILL.md`. |
 | `US-01 / AC-04` | `.agents/global-skills/pumba-projectsetup/SKILL.md` is unchanged. | `git diff` on that file is empty. |
 
@@ -54,11 +56,11 @@
 
 **Statement:** As the repository owner, I want the README and `CLAUDE.md` to explain which skill to invoke for each flow, so that I pick the right one at session start.
 
-**Status:** complete. **Dependencies:** `US-01`, `US-02`.
+**Status:** complete (R1 applied). **Dependencies:** `US-01`, `US-02`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
-| `US-03 / AC-01` | `README.md` lists `/pumba-projectsetup-ai` next to `/pumba-projectsetup`, says which flow each runs, and shows the new template in the file tree. | Readback. |
+| `US-03 / AC-01` | `README.md` lists `/pumba-projectsetup-ai` next to `/pumba-projectsetup`, says which flow each runs (R1: hosted-only tests are written by the selected model), and shows the new template in the file tree. | Readback. |
 | `US-03 / AC-02` | `CLAUDE.md` mentions the new template and the test command for the installer tests. | Readback. |
 
 ## Verification mapping
@@ -67,6 +69,7 @@
 | --- | --- | --- |
 | `US-01 / AC-01` to `AC-03` | Readback of `.agents/global-skills/pumba-projectsetup-ai/SKILL.md` against `pumba-projectsetup/SKILL.md`; `grep -niE "haiku\|sonnet\|opus\|gpt-\|gemini-\|flash"` | Passed: frontmatter, marker, override, tooling paths, self-learning, and precedence present; no model names. |
 | `US-01 / AC-04` | `git diff --stat .agents/global-skills/pumba-projectsetup/SKILL.md` | Passed: empty. |
+| `US-01 / AC-02` (R1), `US-01 / AC-05`, `US-03 / AC-01` (R1) | Readback of the skill, `README.md`, and `CLAUDE.md`; `git diff --stat AGENTS.md .agents/global-skills/pumba-projectsetup/SKILL.md`; `python3 -m pytest tests/ -q -p no:cacheprovider` | Passed: the implementer covers only source code and scripts, the selected model writes tests, and the override names the replaced `AGENTS.md` test rule; diff empty; `9 passed` (installed skill still matches its rendered template). |
 | `US-02 / AC-01` | `tests/test_install_skills.py::test_install_writes_ai_skill_rendered`, `::test_install_keeps_existing_skills` | RED before the installer change (`FileNotFoundError` for the new skill); GREEN after (`9 passed`). |
 | `US-02 / AC-02` | `tests/test_install_skills.py::test_uninstall_removes_ai_skill` | Passed after the change. It also passed before, trivially, because the skill was never installed; it proves removal only once install works. |
 | `US-02 / AC-03` | `tests/test_install_skills.py::test_unmanaged_ai_skill_is_conflict` | RED before (exit 0, no conflict); GREEN after. |
@@ -77,3 +80,5 @@
 - 2026-11-20: Backlog drafted; separate skill and dynamic selection ("B") confirmed by the user.
 - 2026-11-20: Approved, all stories. Pending prompt rules on `feature/story-completion-tests` committed and pushed first; branch `feature/hosted-only-skill` created from it.
 - 2026-11-20: LM Studio refused connections and Ollama had no model loaded, so the lightweight hosted implementer (high effort, allowed files `tests/test_install_skills.py` and `scripts/install_skills.sh`) wrote the tests, observed RED, changed the `SKILLS` list, and observed GREEN. The planner reviewed the diff and reran the suite.
+- 2026-11-20: Revision R1 drafted: tests move from the lightweight implementer to the selected model in the hosted-only skill; US-01 and US-03 reopened, US-02 and its evidence unchanged.
+- 2026-11-20: R1 approved and applied. The override also names the `AGENTS.md` rule it replaces (implementer writes tests), so the skill does not contradict the central rules.

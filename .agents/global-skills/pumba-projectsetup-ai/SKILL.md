@@ -1,6 +1,6 @@
 ---
 name: pumba-projectsetup-ai
-description: "Use when the user invokes /pumba-projectsetup-ai or asks to apply Pumba's project setup rules with hosted models only: the selected model plans and reviews, and the lightest hosted model at high reasoning effort creates and edits code, with no local models."
+description: "Use when the user invokes /pumba-projectsetup-ai or asks to apply Pumba's project setup rules with hosted models only: the selected model plans, reviews, and writes tests, and the lightest hosted model at high reasoning effort creates and edits source code and scripts, with no local models."
 license: MIT
 metadata:
   author: ronald32acunadev
@@ -18,10 +18,11 @@ Load this skill when the user invokes `/pumba-projectsetup-ai` or asks to work u
 ## Hard Rules
 
 - **Read the central rules first**: before any other action in this session, read `{{PROJECTSETUP_DIR}}/AGENTS.md` in full and follow it for the rest of the session, with the hosted-only override below.
-- **Hosted-only override**: this replaces only the Delegation Hierarchy of `AGENTS.md` for this session.
+- **Hosted-only override**: this replaces only the Delegation Hierarchy of `AGENTS.md`, and its rule that the delegated implementer writes tests, for this session.
   - Never call `pumbastudio`, `pumbalama`, or `scripts/ask_local_llm.py`, even when they are available.
-  - **Planner and reviewer**: the model the user selected in the agent. It explores, writes the backlog, prepares each request, reviews every diff, and runs the checks. It does not write code.
-  - **Implementer**: for every creation or edit of source code, tests, and scripts (mechanical code edits included), delegate to the lightest model the current agent offers, chosen at request time through its supported model-selection or delegation mechanism, with reasoning effort set to high. Never assume or hardcode a model name. Report the selected model and effort, or that they could not be set or verified.
+  - **Planner and reviewer**: the model the user selected in the agent. It explores, writes the backlog, prepares each request, reviews every diff, and runs the checks. It does not write source code or scripts.
+  - **Tests**: the selected model writes and edits tests itself, deriving them from the approved acceptance criteria and following `.agents/code-generation-instructions.md` and the QA contract of `AGENTS.md`. Never delegate tests to the implementer.
+  - **Implementer**: for every creation or edit of source code and scripts (mechanical code edits included), delegate to the lightest model the current agent offers, chosen at request time through its supported model-selection or delegation mechanism, with reasoning effort set to high. Never assume or hardcode a model name. Report the selected model and effort, or that they could not be set or verified.
   - Send the implementer the same prompt `AGENTS.md` defines for code requests: `.agents/code-generation-instructions.md`, then `.agents/local-llm-prompt-rules.md` as its system message, plus the Library Context Brief, the task, the verification contract, and the explicit list of allowed files. It creates and edits only those files and reports the changed paths; reject any change outside them.
   - If the agent cannot select a lighter model or set high effort, say so and ask the user to select one or explicitly authorize the current model before any code is written.
 - **Central tooling paths**: these paths in the rules resolve to the central folder, not to the current project:
