@@ -21,6 +21,7 @@ About 16,000 tokens of answer is a file of roughly 600-800 lines; aim for half t
 
 - Start only after the user approves the complete backlog and chooses all stories or one at a time. Include the current story ID and acceptance criteria in each request; a story may require several bounded requests.
 - One file per request, or one function or class when the file is large. Two files at once is where small models start dropping requirements.
+- Every story that changes executable code also gets a test request for its criteria (or one request that returns code and tests as separate files), so the story ends with committed tests; docs- and config-only criteria are exempt.
 - For implementation requests, send the existing tests and their criterion or regression-risk references first. For test-generation requests, send approved criteria, scenarios, and required observable assertions; preexisting test code is not required.
 - Ask for the full file when it is under about 300 lines; above that, or for a small edit, ask for anchored replacement blocks: per change, the path, the unchanged lines just before and after it copied verbatim, and the full replacement. Apply each block verbatim and reject any whose anchors do not match the file.
 - Edits to existing code, including mechanical ones (renames, imports, formatting), go to the implementer like new code.

@@ -24,7 +24,7 @@ The user's explicit approval and execution choice authorize only that backlog:
 - **One at a time**: implement and verify only the next approved story, show its changes and verification results, then stop for explicit approval before starting another. Never silently advance.
 - **Revision**: update the affected stories and obtain approval of the revised scope before implementing them. Preserve completed work and its evidence.
 
-Track each story as pending, in progress, blocked, or complete in the feature's user-story file; complete requires observed acceptance checks. Update that file after each story and approved scope revision, reporting only a concise summary and link in chat. If another feature/task document is required, link it rather than duplicating its execution log or creating competing story trackers. Read-only questions do not require an implementation backlog.
+Track each story as pending, in progress, blocked, or complete in the feature's user-story file; complete requires observed acceptance checks and, for a story that changes executable code, committed automated tests named in its verification mapping. Update that file after each story and approved scope revision, reporting only a concise summary and link in chat. If another feature/task document is required, link it rather than duplicating its execution log or creating competing story trackers. Read-only questions do not require an implementation backlog.
 
 ## Backlog Branches (MANDATORY)
 
@@ -58,6 +58,7 @@ Before requesting backlog approval, review every story against this contract:
 - Define meaningful preconditions, inputs, and observable expected results. Verify applicable outputs, errors, persisted effects, and unchanged state after rejection. Mock-call assertions alone are insufficient when they do not prove the required behavior.
 - Prefer the least costly verification level that proves the behavior. Use integration or end-to-end checks when the boundary itself is part of the criterion; keep automated checks deterministic and isolated using the existing runner.
 - When a relevant deterministic test and a clear expected outcome exist, observe the test fail for the intended reason before implementing the behavior, then observe it pass and refactor with checks still passing. For passive documentation or unavailable meaningful automation, state the exception and use reproducible structural or manual checks; never invent RED/GREEN evidence.
+- **Committed tests for code stories**: a story that changes executable code (source code, scripts, tests) creates or updates automated tests for each of its executable criteria, commits them with the story, and runs them with the project's existing runner (or the location and runner the story names when the project has none). Scratch-only checks do not count. Tests are code, so the delegated implementer writes them and the planner reviews and runs them. Stories, or individual criteria, that only change documentation, rules, or configuration are exempt and use the reproducible structural or manual checks above, recorded explicitly.
 - Include regression checks for existing behavior affected by shared code. Explain each new test that has no acceptance-criterion reference through the change-related risk it protects; unrelated test additions are outside the approved scope.
 
 Keep a compact mapping in the existing story file, not a separate tracker:
@@ -66,7 +67,7 @@ Keep a compact mapping in the existing story file, not a separate tracker:
 | --- | --- | --- |
 | `US-01 / AC-01` | Actual check reference or steps with inputs and expected results | Pending until executed; then passed, failed, or blocked with observed output |
 
-Every criterion needs a verification method; one test may cover several criteria and one criterion may require several checks. A story is complete only after its criteria are demonstrated and applicable regression checks pass. Record failed, skipped, manual-only, and blocked checks explicitly; generated tests, mock calls, and coverage percentages alone do not establish completion. Missing required proof keeps the story pending or blocked, not complete.
+Every criterion needs a verification method; one test may cover several criteria and one criterion may require several checks. A story is complete only after its criteria are demonstrated and applicable regression checks pass; a story that changes executable code also needs its committed tests, named in the mapping, passing. Record failed, skipped, manual-only, and blocked checks explicitly; generated tests, mock calls, and coverage percentages alone do not establish completion. Missing required proof keeps the story pending or blocked, not complete.
 
 When approved scope changes, update affected criteria and checks and reopen only invalidated work. Preserve still-valid completed evidence and obtain the existing scope-revision approval before implementing the revised scope.
 
