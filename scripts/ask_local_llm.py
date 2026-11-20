@@ -4,7 +4,7 @@ Any agent can run it when its MCP tool times out or cannot turn reasoning off:
 
     python3 scripts/ask_local_llm.py --user request.md --out answer.md [--code-out file.py]
 
-The system message is the project rules in .agents/local-llm-prompt-rules.md, preceded by --system when given.
+The system message is the --system text when given, then .agents/code-generation-instructions.md, then the project rules in .agents/local-llm-prompt-rules.md.
 """
 
 import argparse
@@ -17,6 +17,7 @@ import urllib.request
 from pathlib import Path
 
 RULES = Path(__file__).resolve().parents[1] / ".agents/local-llm-prompt-rules.md"
+INSTRUCTIONS = Path(__file__).resolve().parents[1] / ".agents/code-generation-instructions.md"
 PROVIDERS = {"lmstudio": "http://127.0.0.1:1234", "ollama": "http://127.0.0.1:11434"}
 
 
@@ -36,14 +37,18 @@ def loaded_model(provider: str, base: str) -> str:
 
 
 def system_message(extra: str | None) -> str:
-    """Construct the system prompt from rules and optional extra text."""
-    rules_text = ""
-    if RULES.exists():
-        rules_text = RULES.read_text(encoding="utf-8")
+    """Build the system prompt: optional extra text, code generation instructions, then rules."""
+    if not INSTRUCTIONS.exists():
+        raise SystemExit(f"Missing code generation instructions: {INSTRUCTIONS}")
 
+    parts = []
     if extra:
-        return f"{extra}\n\n{rules_text}" if rules_text else extra
-    return rules_text
+        parts.append(extra)
+    parts.append(INSTRUCTIONS.read_text(encoding="utf-8"))
+    if RULES.exists():
+        parts.append(RULES.read_text(encoding="utf-8"))
+
+    return "\n\n".join(parts)
 
 
 def first_code_block(text: str) -> str | None:
