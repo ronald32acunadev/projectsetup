@@ -20,9 +20,10 @@ Load this skill when the user invokes `/pumba-projectsetup` or asks to work unde
 - **Read the central rules first**: before any other action in this session, read `{{PROJECTSETUP_DIR}}/AGENTS.md` in full and follow it for the rest of the session.
 - **Central tooling paths**: these paths in the rules resolve to the central folder, not to the current project:
   - `.agents/local-llm-prompt-rules.md` → `{{PROJECTSETUP_DIR}}/.agents/local-llm-prompt-rules.md`
+  - `.agents/code-generation-instructions.md` → `{{PROJECTSETUP_DIR}}/.agents/code-generation-instructions.md`
   - `.agents/local-llm-guide.md` → `{{PROJECTSETUP_DIR}}/.agents/local-llm-guide.md`
   - `scripts/ask_local_llm.py` → `python3 {{PROJECTSETUP_DIR}}/scripts/ask_local_llm.py`
-- **Full rule set**: apply all of `AGENTS.md`, not a summary: backlog approval and execution modes, backlog branches, story readiness, QA evidence, planning and implementation roles, local-first code delegation, and the Library Context Brief.
+- **Full rule set**: apply all of `AGENTS.md`, not a summary: backlog approval and execution modes, backlog branches, story readiness, QA evidence, planning and implementation roles, local-first delegation of code creation and edits (with the high-effort lightweight hosted fallback), and the Library Context Brief.
 - **Self-learning for local models**: when a review rejects part of a local model's answer, append one short reusable rule to `{{PROJECTSETUP_DIR}}/.agents/local-llm-prompt-rules.md`, so every project that uses this skill sends the improved rules on its next request. Save findings that only apply to the current project in Engram, not in the central file. Never write secrets to either.
 - **Project-local work**: backlogs (`docs/userstories/<feature-name>/README.md`), backlog branches, `.context/` caches, code, and commits belong to the current project.
 - **Precedence**: when the current project has its own `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`, its rules win on conflicts; the central rules fill in what it does not cover. Report any conflict that changes behavior.

@@ -6,9 +6,9 @@
 
 ## Approval and execution
 
-- Backlog: Pending approval.
-- Execution mode: Not selected.
-- Implementation: Not started.
+- Backlog: Approved 2026-11-20.
+- Execution mode: All stories.
+- Implementation: Complete (script change by local model `zai-org/glm-4.7-flash` via `scripts/ask_local_llm.py`; see Log).
 
 ## Confirmed decisions
 
@@ -28,11 +28,11 @@
 
 **Statement:** As the repository owner, I want every delegated code request to carry a fixed set of best practices for generating code, so that local and lightweight models produce complete, correct code on the first answer.
 
-**Status:** pending. **Dependencies:** none.
+**Status:** complete. **Dependencies:** none.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
-| `US-01 / AC-01` | `.agents/code-generation-instructions.md` exists, is in English, and covers: understand before writing, match existing style and APIs, smallest change that meets the criteria, complete code (no placeholders, `TODO`, or elided sections), explicit error handling, no invented APIs or imports, and a self-check against the task's criteria before answering. It fits the 500-token system-message budget together with the rules file. | Readback; word count. |
+| `US-01 / AC-01` | `.agents/code-generation-instructions.md` exists, is in English, and covers: understand before writing, match existing style and APIs, smallest change that meets the criteria, complete code (no placeholders, `TODO`, or elided sections), explicit error handling, no invented APIs or imports, and a self-check against the task's criteria before answering. It fits the system-message budget of `.agents/local-llm-guide.md` together with the rules file (budget raised from 500 to 900 tokens; see Log). | Readback; word count. |
 | `US-01 / AC-02` | `AGENTS.md` (Workflow step 3 and the Prompt Template) and `.agents/local-llm-guide.md` (request structure) require pasting that file into the system message of every code request, local or hosted. | Readback. |
 | `US-01 / AC-03` | `scripts/ask_local_llm.py` prepends the instructions file and then the rules file to the system message; existing options and behavior are unchanged. A missing instructions file fails with a clear error instead of sending a partial prompt. | Script test in a scratch directory with a stub HTTP server: inspect the sent payload; run with the file removed; compare existing options' output against the base commit. |
 
@@ -40,7 +40,7 @@
 
 **Statement:** As the repository owner, I want the fallback implementer to be the lightest model available in the current agent running at high reasoning effort, so that code stays cheap when local models are down but quality does not drop.
 
-**Status:** pending. **Dependencies:** none.
+**Status:** complete. **Dependencies:** none.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -52,7 +52,7 @@
 
 **Statement:** As the repository owner, I want the delegated implementer to write edits to existing code as well as new code, so that the expensive planner does not write code through edits.
 
-**Status:** pending. **Dependencies:** `US-01`.
+**Status:** complete. **Dependencies:** `US-01`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -63,7 +63,7 @@
 
 **Statement:** As the repository owner, I want a hosted implementer that has file tools to create and edit files on disk itself, so that the planner only prepares context, reviews the diff, and runs checks.
 
-**Status:** pending. **Dependencies:** `US-02`, `US-03`.
+**Status:** complete. **Dependencies:** `US-02`, `US-03`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -74,7 +74,7 @@
 
 **Statement:** As the repository owner, I want every copy and summary of the rules updated in the same commit, so that no agent reads stale delegation rules.
 
-**Status:** pending. **Dependencies:** `US-01` to `US-04`.
+**Status:** complete. **Dependencies:** `US-01` to `US-04`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -85,8 +85,19 @@
 
 | Story / criterion | Check | Observed result |
 | --- | --- | --- |
-| `US-01 / AC-01` to `US-05 / AC-02` | As listed in each story | Pending |
+| `US-01 / AC-01` | Readback; `wc -w` | Passed: all listed topics present; instructions 230 words + rules 330 words (~750 tokens, within the 900-token budget). |
+| `US-01 / AC-02` | Readback of `AGENTS.md` Workflow step 3, Prompt Template, and guide request structure | Passed. |
+| `US-01 / AC-03` | Stub HTTP server driving `main()` in a scratch directory (`--system`, `--code-out`) | RED before change: `has_instructions False`. GREEN after: `starts_extra True has_instructions True has_rules True order_ok True`, `reasoning none`, code block saved, `rc 0`. Instructions file removed in a scratch copy: `SystemExit: Missing code generation instructions: <path>` before any request. |
+| `US-02 / AC-01` to `AC-03` | Readback; `grep` for model names in `AGENTS.md`, `CLAUDE.md`, instructions | Passed: no model IDs added (pre-existing `"gpt-4o"` alias example untouched); user-decision rule kept. |
+| `US-03 / AC-01`, `AC-02` | Readback of `AGENTS.md` and `.agents/local-llm-guide.md` | Passed. |
+| `US-04 / AC-01`, `AC-02` | Readback of `AGENTS.md` fallback section | Passed. |
+| `US-05 / AC-01` | `git diff --no-index AGENTS.md .agents/rules/AGENTS.md` | Passed: no output. |
+| `US-05 / AC-02` | Readback of `README.md`, `CLAUDE.md`, `pumba-projectsetup` skill | Passed. |
 
 ## Log
 
 - 2026-11-20: Backlog drafted; scope "C" confirmed by the user.
+- 2026-11-20: Approved, all stories. Pending work on `feature/global-skill-installer` committed and pushed first.
+- 2026-11-20: `scripts/ask_local_llm.py` change generated by the local model in one request (17 s) and accepted unchanged after review.
+- 2026-11-20: The guide's 500-token system-message budget was already exceeded by the rules file alone (330 words); raised it to 900 tokens and lowered the answer reserve to 15,600 instead of trimming either file.
+- 2026-11-20: Installed global skills are not refreshed by this change; rerun `sh scripts/install_skills.sh` to update them.

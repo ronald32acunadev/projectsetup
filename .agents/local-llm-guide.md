@@ -8,12 +8,12 @@ Prompt and answer share the 32k window. Estimate 1 token per 4 characters of Eng
 
 | Part | Budget |
 | :--- | :--- |
-| System message: role + project rules | 500 |
+| System message: role + code generation instructions + project rules | 900 |
 | Library Context Brief (versions, exact API, one verbatim call site) | 3,000 |
 | Existing code the change touches (verbatim, only what is needed) | 8,000 |
 | Task, step by step, and the tests it must pass | 3,000 |
 | Closing checklist | 100 |
-| **Answer (leave at least this free)** | **16,000** |
+| **Answer (leave at least this free)** | **15,600** |
 
 About 16,000 tokens of answer is a file of roughly 600-800 lines; aim for half that. If the existing code alone is over 8,000 tokens, send signatures and docstrings of what the change calls, not whole files.
 
@@ -22,13 +22,15 @@ About 16,000 tokens of answer is a file of roughly 600-800 lines; aim for half t
 - Start only after the user approves the complete backlog and chooses all stories or one at a time. Include the current story ID and acceptance criteria in each request; a story may require several bounded requests.
 - One file per request, or one function or class when the file is large. Two files at once is where small models start dropping requirements.
 - For implementation requests, send the existing tests and their criterion or regression-risk references first. For test-generation requests, send approved criteria, scenarios, and required observable assertions; preexisting test code is not required.
-- Ask for the full file when it is under about 300 lines; above that, ask for an exact replacement block with the lines before and after it.
+- Ask for the full file when it is under about 300 lines; above that, or for a small edit, ask for anchored replacement blocks: per change, the path, the unchanged lines just before and after it copied verbatim, and the full replacement. Apply each block verbatim and reject any whose anchors do not match the file.
+- Edits to existing code, including mechanical ones (renames, imports, formatting), go to the implementer like new code.
 
 ## Structure of every request
 
 ```text
 SYSTEM
 You write production <language> for <project>. <language rules: English identifiers, comment style>.
+<paste .agents/code-generation-instructions.md>
 Rules:
 <paste .agents/local-llm-prompt-rules.md>
 
@@ -59,7 +61,7 @@ USER
 3. <the third>
 
 ## Output format
-<full file | exact replacement block>, preceded by its path.
+<full file | anchored replacement blocks>, preceded by its path.
 ```
 
 Put the three rules the task most needs at the very end: small models weigh the last lines most.
@@ -92,8 +94,8 @@ Measured on 2026-10-23 with one real request (a 180-line Python module, scored b
 
 1. LM Studio (`pumbastudio`, port 1234): whatever model is loaded; check `GET /v1/models`.
 2. Ollama (`pumbalama`, port 11434): the model in `GET /api/ps`.
-3. An available lightweight hosted implementer when neither local provider works or the user explicitly bypasses local execution. Keep the reasoning-capable planner responsible for context and review, not default code generation.
+3. The lightest hosted model the current client offers, with reasoning effort set to high, when neither local provider works or the user explicitly bypasses local execution. Send it the same prompt. If it has file tools, give it the allowed files: it creates and edits only those, and the planner reviews the diff. Keep the reasoning-capable planner responsible for context and review, not default code generation.
 
-Resolve hosted model choices through the current client's supported capabilities, without hardcoded names. If switching or delegation is unavailable, ask the user to select a lightweight model or explicitly authorize the current model. Do not claim a model switch happened without evidence. Documentation, configuration, and mechanical edits remain orchestrator-owned under `AGENTS.md`.
+Resolve hosted model choices through the current client's supported capabilities, without hardcoded names. If switching or delegation is unavailable, ask the user to select a lightweight model or explicitly authorize the current model. Do not claim a model switch happened without evidence. Documentation and configuration remain orchestrator-owned under `AGENTS.md`; code edits, mechanical ones included, are delegated.
 
 Unload the local model before work that needs the GPU.

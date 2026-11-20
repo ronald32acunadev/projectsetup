@@ -23,11 +23,13 @@ No output means they are in sync.
 
 ## Local-model delegation tooling
 
-AGENTS.md requires source code, tests, and scripts to be synthesized by a local model; docs, config, and commit messages are written by the agent. In Claude Code the MCP tools are `mcp__pumbastudio__openai_chat` (LM Studio, primary) and `mcp__pumbalama__chat_completion` (Ollama, secondary).
+AGENTS.md requires creating and editing source code, tests, and scripts to be delegated to a local model; docs, config, and commit messages are written by the agent. In Claude Code the MCP tools are `mcp__pumbastudio__openai_chat` (LM Studio, primary) and `mcp__pumbalama__chat_completion` (Ollama, secondary).
 
 - `.agents/local-llm-prompt-rules.md` is the system message pasted into every code request. Append a short rule whenever a review rejects part of a local-model answer.
+- `.agents/code-generation-instructions.md` holds stable best practices for creating and editing code; it goes into the system message before the rules file, for local and hosted implementers.
+- Hosted fallback in Claude Code: delegate through the Agent tool with the lightest `model` value it offers and `effort: "high"`, and pass the allowed files; the subagent edits only those files and the planner reviews the diff. If the Agent tool cannot be used, ask the user before writing code with the planner.
 - `.agents/local-llm-guide.md` is the project-independent guide for prompting a 32k-context local model (token budget, one unit per request, request structure).
-- `scripts/ask_local_llm.py` is the fallback when the MCP tool times out or cannot disable reasoning. It is stdlib-only Python, prepends the rules file to the system message, and sends `reasoning_effort: "none"` unless `--think` is passed:
+- `scripts/ask_local_llm.py` is the fallback when the MCP tool times out or cannot disable reasoning. It is stdlib-only Python, prepends the instructions file and then the rules file to the system message (failing if the instructions file is missing), and sends `reasoning_effort: "none"` unless `--think` is passed:
 
 ```bash
 python3 scripts/ask_local_llm.py --user request.md --out answer.md --code-out file.py

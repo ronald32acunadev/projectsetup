@@ -73,18 +73,18 @@ When approved scope changes, update affected criteria and checks and reopen only
 ## Planning and Implementation Roles
 
 - **Planner / reviewer**: use the selected reasoning-capable model for analysis, story decomposition, implementation context, and result review. It does not become the default code writer merely because it owns the conversation.
-- **Implementer**: synthesize approved code, tests, and scripts using the local-first hierarchy below; when local execution is unavailable or explicitly bypassed by the user, use an available lightweight hosted model.
+- **Implementer**: create and edit approved code, tests, and scripts using the local-first hierarchy below; when local execution is unavailable or explicitly bypassed by the user, use the lightest available hosted model at high reasoning effort.
 - Resolve model availability and selection through the current client's supported capabilities. Do not hardcode model IDs, silently change global defaults, or claim that shorter answers or lower reasoning effort change the underlying model.
 - If a lightweight model cannot be selected or invoked, report that limitation and ask the user to select one or explicitly authorize the current model before generating code. Never silently fall back to the expensive planner.
-- Hand off only the approved story and criterion IDs, acceptance checks with preconditions and expected observable effects, change-related regression risks, allowed files, relevant existing code, project rules, and Library Context Brief. The planner reviews the output and runs verification regardless of the implementer.
+- Hand off only the approved story and criterion IDs, acceptance checks with preconditions and expected observable effects, change-related regression risks, allowed files, relevant existing code, code generation instructions, project rules, and Library Context Brief. The planner reviews the output and runs verification regardless of the implementer.
 
 These are cross-agent instructions, not an automatic model-switching integration. Apply them through the capabilities actually available in Codex, Claude Code, Antigravity, OpenCode, or the current client.
 
 ## Code Authorship & Delegation Rule
 
-**New or modified source code in this repository is synthesized by local LLM providers first. When local execution is unavailable or the user explicitly chooses not to use it, a lightweight hosted implementer writes the code. The planning model writes code only with explicit user authorization when that route is unavailable.**
+**Creating and editing source code in this repository is delegated to local LLM providers first. When local execution is unavailable or the user explicitly chooses not to use it, a lightweight hosted implementer at high reasoning effort creates and edits the code. The planning model writes code only with explicit user authorization when that route is unavailable.**
 
-Local models are the owner's dedicated code synthesizers, exposed to agents as MCP servers. The agent is the orchestrator: it understands the request, prepares the context, prompts the local model for code, reviews the answer, applies it to files, and verifies it.
+Local models are the owner's dedicated code synthesizers, exposed to agents as MCP servers. The agent is the orchestrator: it understands the request, prepares the context, prompts the implementer for code or edits, reviews the result, applies local-model answers to files, and verifies it.
 
 ### Delegation Hierarchy & Dynamic Model Selection
 
@@ -99,23 +99,28 @@ Local models are the owner's dedicated code synthesizers, exposed to agents as M
    - **Model**: Target whichever model is currently active/loaded in Ollama (e.g., checking active running models via `/api/ps` or using the active Ollama model). Do not restrict to any pre-defined model name.
 3. **Fallback: Lightweight Hosted Implementer**
    - Used when neither local provider is available, both fail (e.g., connection errors, GPU OOM, or no model loaded), or the user explicitly bypasses local execution.
-   - Select a lightweight model actually available through the current client, using its supported model-selection or delegation mechanism. Report the selected route and any inability to verify the actual model identity.
+   - Select the lightest model actually available through the current client, using its supported model-selection or delegation mechanism, and set its reasoning effort to high through the client's supported setting. Report the selected route, model, and effort, or the inability to set or verify them.
+   - Send it the same prompt as a local model: code generation instructions, project rules, Library Context Brief, task, and verification contract.
+   - **Direct file writes**: when the hosted implementer has file tools, also give it the explicit list of allowed files. It creates and edits only those files on disk and reports the changed paths. The planner reviews the resulting diff against the story and the Library Context Brief, rejects any change outside the allowed files, and runs the acceptance checks.
    - Keep planning and review with the reasoning-capable orchestrator. If the client cannot invoke a lightweight implementer, follow the explicit user-decision rule above.
 
 ### What Local Models Write
+
+Delegated implementers create new code and edit existing code, including mechanical code edits (renames, import adjustments, formatting):
 
 - Source code (e.g., `src/`, `lib/`, `electron/`, etc.).
 - Unit, integration, and end-to-end tests (e.g., `test/`, `tests/`).
 - Scripts and executable routines.
 
+Local models have no filesystem access. For an edit they return, per change, the target path, the unchanged lines just before and after it copied verbatim (anchors), and the full replacement block. The agent applies each block verbatim and rejects any block whose anchors do not match the file.
+
 ### What the Agent Does Itself
 
 - Exploration, codebase mapping, task tracking, and planning.
 - Resolving library dependencies, reading up-to-date documentation.
-- Applying synthesized code to disk and executing builds/tests.
-- Reviewing code for correctness, safety, and architectural standards.
-- Documentation (`docs/`, READMEs), configuration files, and commit messages.
-- Mechanical edits with no logic: renames, imports adjustments, code formatting.
+- Applying local-model answers to disk and executing builds/tests.
+- Reviewing code and diffs for correctness, safety, and architectural standards.
+- Documentation (`docs/`, READMEs), configuration files, and commit messages, including their edits.
 
 ## Workflow
 
@@ -124,11 +129,11 @@ Local models are the owner's dedicated code synthesizers, exposed to agents as M
 3. **Prepare Prompt**:
    - Select the implementer through the hierarchy above. Call `pumbastudio`, `pumbalama`, or the available lightweight hosted implementer with a self-contained prompt that follows the Prompt Template below.
    - **System message**: Include project rules that apply (language, architecture constraints, style).
-     Always paste the rules in `.agents/local-llm-prompt-rules.md`, and add a short rule there whenever a review rejects part of an answer.
-   - **When the MCP tool times out or cannot turn reasoning off**, run `python3 scripts/ask_local_llm.py --user request.md --out answer.md --code-out file.py` (add `--provider ollama` for Ollama). It adds the rules file to the system message itself and sends `reasoning_effort: "none"` unless `--think` is given.
-   - **User message**: Include the Library Context Brief, the exact task, target file paths, relevant existing code verbatim, and expected output format (full file or exact replacement block).
+     Always paste `.agents/code-generation-instructions.md` (best practices for creating and editing code), then the rules in `.agents/local-llm-prompt-rules.md`, into every code request, local or hosted. Add a short rule to the rules file whenever a review rejects part of an answer.
+   - **When the MCP tool times out or cannot turn reasoning off**, run `python3 scripts/ask_local_llm.py --user request.md --out answer.md --code-out file.py` (add `--provider ollama` for Ollama). It adds the instructions file and the rules file to the system message itself, fails if the instructions file is missing, and sends `reasoning_effort: "none"` unless `--think` is given.
+   - **User message**: Include the Library Context Brief, the exact task, target file paths, relevant existing code verbatim, and expected output format (full file, or anchored replacement blocks for edits).
 4. **Review and Learn**: Check the answer against the approved story, acceptance criteria, Library Context Brief, project rules, and language requirements. Reject APIs not in the brief or existing code. Send one focused correction request for an incorrect answer; if still incorrect, report the blocker rather than silently rewriting with the planner. Record reusable corrections in `.agents/local-llm-prompt-rules.md` and project-specific findings in Engram, without secrets. This is prompt/context improvement, not automatic model training or fine-tuning.
-5. **Apply, Test, and Report**: Apply the code using file tools, run the story's acceptance checks and applicable tests, and report failures honestly. Continue or pause according to the approved execution mode.
+5. **Apply, Test, and Report**: Apply local-model answers using file tools (a hosted implementer with file tools has already written its allowed files), run the story's acceptance checks and applicable tests, and report failures honestly. Continue or pause according to the approved execution mode.
 
 ## Library Context Brief & Offline Documentation Cache (MANDATORY)
 
@@ -183,7 +188,7 @@ Then detail the change itself step by step: functions to add or change, behavior
 <paths + relevant existing code verbatim>
 
 ## Output format
-<full file | exact replacement block>. Use only the APIs listed above.
+<full file | anchored replacement blocks: path, verbatim lines before and after, replacement>. Use only the APIs listed above.
 ```
 
 ## MCP Server Setup Reference

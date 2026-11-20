@@ -90,6 +90,7 @@ Rerun it after moving this folder; rule edits need no reinstall. It never overwr
 │   ├── rules/AGENTS.md               # Byte-identical copy of AGENTS.md
 │   ├── local-llm-guide.md            # Guide for prompting a 32k-context local model
 │   ├── local-llm-prompt-rules.md     # System message for every local code request
+│   ├── code-generation-instructions.md  # Best practices sent with every code request
 │   ├── global-skills/                # Templates for pumba-* skills, rendered by the installer
 │   └── skills/update-readme/         # README audit/update skill
 ├── .claude/
@@ -136,7 +137,7 @@ All rules are in [`AGENTS.md`](AGENTS.md). The essentials:
 | Execution mode | The user chooses **all stories** (implemented in dependency order without asking again) or **one at a time** (stop for approval after each story). |
 | Story readiness | Each story has an actor, goal, and value; acceptance criteria with IDs such as `US-01 / AC-01`; and a verification method. No invented business rules. |
 | QA evidence | Tests derive from acceptance criteria or regression risks. Observe a failing test before implementing when a deterministic test exists. A story is complete only with observed evidence in its story file. |
-| Roles | A reasoning model plans and reviews. Code is written by a local model first, then a lightweight hosted model; the planner writes code only with explicit user authorization. |
+| Roles | A reasoning model plans and reviews. Code is created and edited by a local model first, then by the lightest hosted model at high reasoning effort; the planner writes code only with explicit user authorization. |
 | Commits | Conventional Commits, no AI attribution lines. |
 
 ### Workflow per change
@@ -164,13 +165,13 @@ flowchart TD
 
 ## Local-model code delegation
 
-Source code, tests, and scripts are synthesized by a local model. Docs, config, and commit messages are written by the agent. Model names are never hardcoded: the agent uses whichever model is loaded.
+Source code, tests, and scripts, new or edited, are delegated to a local model. Every request carries `.agents/code-generation-instructions.md` and then `.agents/local-llm-prompt-rules.md`. Local models return full files or anchored replacement blocks that the agent applies; a hosted implementer with file tools edits only its allowed files, and the agent reviews the diff. Docs, config, and commit messages are written by the agent. Model names are never hardcoded: the agent uses whichever model is loaded.
 
 ```mermaid
 flowchart LR
     R[Code request] --> S[pumbastudio<br/>LM Studio :1234]
     S -- unreachable or fails --> O[pumbalama<br/>Ollama :11434]
-    O -- unreachable or fails --> H[Lightweight<br/>hosted model]
+    O -- unreachable or fails --> H[Lightest hosted model<br/>high reasoning effort]
     S -. MCP timeout .-> P[scripts/ask_local_llm.py]
     O -. MCP timeout .-> P
 ```
@@ -179,7 +180,7 @@ flowchart LR
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | `pumbastudio` | LM Studio | `1234` | `openai_chat` (`mcp__pumbastudio__openai_chat`) |
 | 2 | `pumbalama` | Ollama | `11434` | `chat_completion` (`mcp__pumbalama__chat_completion`) |
-| 3 | Lightweight hosted model | Current client | n/a | Client's own delegation mechanism |
+| 3 | Lightest hosted model, high reasoning effort | Current client | n/a | Client's own delegation mechanism |
 
 ### MCP server setup
 
@@ -207,7 +208,7 @@ flowchart LR
 
 ### Fallback script: `ask_local_llm.py`
 
-Use it when the MCP tool times out or cannot turn reasoning off. It is stdlib-only Python. It puts `.agents/local-llm-prompt-rules.md` in the system message and sends `reasoning_effort: "none"` unless `--think` is passed.
+Use it when the MCP tool times out or cannot turn reasoning off. It is stdlib-only Python. It puts `.agents/code-generation-instructions.md` and then `.agents/local-llm-prompt-rules.md` in the system message, exits with an error if the instructions file is missing, and sends `reasoning_effort: "none"` unless `--think` is passed.
 
 ```bash
 python3 scripts/ask_local_llm.py --user request.md --out answer.md --code-out file.py
@@ -218,7 +219,7 @@ python3 scripts/ask_local_llm.py --user request.md --out answer.md --code-out fi
 | `--user <file>` | User message (the request). Required. | n/a |
 | `--out <file>` | Where the full answer is saved. Required. | n/a |
 | `--code-out <file>` | Saves the first fenced code block of the answer. Exits with code 1 if there is none. | not set |
-| `--system <file>` | Extra system text, placed before the rules file. | not set |
+| `--system <file>` | Extra system text, placed before the instructions and rules files. | not set |
 | `--provider lmstudio\|ollama` | Local server to call. | `lmstudio` |
 | `--think` | Leaves reasoning on (does not send `reasoning_effort: "none"`). | off |
 | `--timeout <seconds>` | Request timeout. | `1800` |
