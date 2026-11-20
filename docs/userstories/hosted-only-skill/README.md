@@ -6,9 +6,9 @@
 
 ## Approval and execution
 
-- Backlog: Pending approval.
-- Execution mode: Not selected.
-- Implementation: Not started.
+- Backlog: Approved 2026-11-20.
+- Execution mode: All stories.
+- Implementation: Complete (installer change and tests by the lightweight hosted implementer at high effort; see Log).
 
 ## Confirmed decisions
 
@@ -29,7 +29,7 @@
 
 **Statement:** As the repository owner, I want a `/pumba-projectsetup-ai` skill, so that I can run a session where my selected model plans and a lighter high-effort model writes and edits the code, with no local models.
 
-**Status:** pending. **Dependencies:** none.
+**Status:** complete. **Dependencies:** none.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -42,7 +42,7 @@
 
 **Statement:** As the repository owner, I want `sh scripts/install_skills.sh` to install, update, and uninstall `pumba-projectsetup-ai` in every agent, so that both flows are available everywhere with one command.
 
-**Status:** pending. **Dependencies:** `US-01`.
+**Status:** complete. **Dependencies:** `US-01`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -54,7 +54,7 @@
 
 **Statement:** As the repository owner, I want the README and `CLAUDE.md` to explain which skill to invoke for each flow, so that I pick the right one at session start.
 
-**Status:** pending. **Dependencies:** `US-01`, `US-02`.
+**Status:** complete. **Dependencies:** `US-01`, `US-02`.
 
 | Criterion | Acceptance condition | Verification |
 | --- | --- | --- |
@@ -65,8 +65,15 @@
 
 | Story / criterion | Check | Observed result |
 | --- | --- | --- |
-| `US-01 / AC-01` to `US-03 / AC-02` | As listed in each story | Pending |
+| `US-01 / AC-01` to `AC-03` | Readback of `.agents/global-skills/pumba-projectsetup-ai/SKILL.md` against `pumba-projectsetup/SKILL.md`; `grep -niE "haiku\|sonnet\|opus\|gpt-\|gemini-\|flash"` | Passed: frontmatter, marker, override, tooling paths, self-learning, and precedence present; no model names. |
+| `US-01 / AC-04` | `git diff --stat .agents/global-skills/pumba-projectsetup/SKILL.md` | Passed: empty. |
+| `US-02 / AC-01` | `tests/test_install_skills.py::test_install_writes_ai_skill_rendered`, `::test_install_keeps_existing_skills` | RED before the installer change (`FileNotFoundError` for the new skill); GREEN after (`9 passed`). |
+| `US-02 / AC-02` | `tests/test_install_skills.py::test_uninstall_removes_ai_skill` | Passed after the change. It also passed before, trivially, because the skill was never installed; it proves removal only once install works. |
+| `US-02 / AC-03` | `tests/test_install_skills.py::test_unmanaged_ai_skill_is_conflict` | RED before (exit 0, no conflict); GREEN after. |
+| `US-03 / AC-01`, `AC-02` | Readback of `README.md` and `CLAUDE.md` | Passed. |
 
 ## Log
 
 - 2026-11-20: Backlog drafted; separate skill and dynamic selection ("B") confirmed by the user.
+- 2026-11-20: Approved, all stories. Pending prompt rules on `feature/story-completion-tests` committed and pushed first; branch `feature/hosted-only-skill` created from it.
+- 2026-11-20: LM Studio refused connections and Ollama had no model loaded, so the lightweight hosted implementer (high effort, allowed files `tests/test_install_skills.py` and `scripts/install_skills.sh`) wrote the tests, observed RED, changed the `SKILLS` list, and observed GREEN. The planner reviewed the diff and reran the suite.

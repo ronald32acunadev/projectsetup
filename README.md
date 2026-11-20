@@ -37,11 +37,12 @@ Install the skills into every agent you have:
 sh scripts/install_skills.sh
 ```
 
-Then, in any project, invoke the skill you need:
+Then, in any project, invoke the skill you need. The skill you invoke at session start picks the code-delegation flow: `/pumba-projectsetup` for local models first, `/pumba-projectsetup-ai` for hosted models only.
 
 | Skill | What it does |
 | :--- | :--- |
 | `/pumba-projectsetup` | Reads this folder's `AGENTS.md` and applies all of it for the session: backlogs, branches, story and QA contracts, local-model delegation, and self-learning. Rejected local-model answers add a rule to the central `.agents/local-llm-prompt-rules.md`, shared by all projects. Writes no files into the project. |
+| `/pumba-projectsetup-ai` | Same rules without local models: the model you selected in the agent plans and reviews, and the lightest model the agent offers, at high reasoning effort, creates and edits code. Never calls LM Studio, Ollama, or `ask_local_llm.py`. |
 | `/pumba-update-readme` | Runs the [`update-readme`](.agents/skills/update-readme/SKILL.md) skill on the current project's README. |
 
 The installer writes a small `SKILL.md` per agent that holds this folder's absolute path. It installs only for agents whose config folder exists:
@@ -103,7 +104,7 @@ Rerun it after moving this folder; rule edits need no reinstall. It never overwr
 │   ├── ask_local_llm.py              # Fallback client for local models
 │   ├── configure_ollama_models.sh    # Owner-specific Ollama model-path setup
 │   └── install_skills.sh             # Installs pumba-* skills into every agent
-└── tests/test_ask_local_llm.py       # pytest tests for ask_local_llm.py
+└── tests/                            # pytest tests for ask_local_llm.py and install_skills.sh
 ```
 
 | File | Purpose |

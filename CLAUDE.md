@@ -36,7 +36,7 @@ python3 scripts/ask_local_llm.py --user request.md --out answer.md --code-out fi
 ```
 
   Options: `--provider lmstudio|ollama` (default `lmstudio`), `--system <file>`, `--think`, `--timeout <seconds>` (default 1800).
-- `scripts/install_skills.sh` renders `.agents/global-skills/pumba-*/SKILL.md` (replacing `{{PROJECTSETUP_DIR}}` with this folder's path) into the global skills folder of Claude Code, Codex, OpenCode, and Antigravity. Flags: `--dry-run`, `--uninstall`. It only touches folders whose `SKILL.md` carries its `managed-by` marker.
+- `scripts/install_skills.sh` renders `.agents/global-skills/pumba-*/SKILL.md` (replacing `{{PROJECTSETUP_DIR}}` with this folder's path) into the global skills folder of Claude Code, Codex, OpenCode, and Antigravity. Flags: `--dry-run`, `--uninstall`. It only touches folders whose `SKILL.md` carries its `managed-by` marker. Templates: `pumba-projectsetup` (local-first flow), `pumba-projectsetup-ai` (hosted-only flow: the selected model plans, the lightest hosted model at high effort writes code), and `pumba-update-readme`. Its tests live in `tests/test_install_skills.py`.
 - `scripts/configure_ollama_models.sh` installs a systemd drop-in pointing the system Ollama service at the owner's model directory. It must run as root (`sudo sh scripts/configure_ollama_models.sh`) and refuses to overwrite a different existing override.
 
 ## Skills and commands
