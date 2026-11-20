@@ -24,3 +24,12 @@ Paste this list into the system message of every code request to a local model. 
 - Put every import at the top of the file; never inside a function or fixture.
 - In a correction request, apply every numbered fix; return the file only when all are done.
 - Always copy exact relative import paths with extensions verbatim from the prompt; never shorten them to bare module names.
+- Never reset an idempotent `closePromise` back to `null` in `finally`; keep it latched so repeated `close()` calls stay no-ops.
+- TypeScript with `noUncheckedIndexedAccess`: index arrays in tests as `arr[0]!`; never import names the file does not use.
+- Vitest: `expect(fn).toThrow()` returns nothing; assert error fields with `toThrow(expect.objectContaining({ code, status }))`.
+- Keep a limit and its running total in two separate fields; never compare a field with itself.
+- Keep event-subscription disposables in their own array, never inside the listener arrays.
+- A private backing field never shares its name with a public getter (`hasExited` behind `get exited()`).
+- Anchored edits: BEFORE and AFTER are each ONE verbatim existing line; REPLACE holds only the new lines between them, never the whole file or the anchors.
+- Never call methods the brief does not list (no invented helpers such as `getServer()`); check each returned value's type in the brief before using it (a function is not a `{ dispose() }` object).
+- Search/replace answers: label every block `OLD:` and `NEW:`, each in its own fenced block; never return NEW fragments alone, and return every requested change (count them before answering).
